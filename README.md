@@ -1,11 +1,11 @@
 OpenGL Demo Android
 ------
 
-Based on OpenGL ES.
+Based on OpenGL ES, cglm, stb_image.
 
-Still working in progress.
+**Still working in progress.**
 
-The render texture is from <https://github.com/STARRY-S/OpenGL-Demo>
+The world and texture is from <https://github.com/STARRY-S/OpenGL-Demo>
 
 Screenshot: 
 
