@@ -4,7 +4,7 @@ package moe.starrys.gameengine;
 
 import android.content.res.AssetManager;
 
-public class GL2JNILib {
+public class GL3JNILib {
 
     static {
         System.loadLibrary("game_engine");
