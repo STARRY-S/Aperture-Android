@@ -191,6 +191,7 @@ int setup(int width, int height)
     shaderSetInt(floorShader, "texture0", 0);
     glActiveTexture(GL_TEXTURE0);
 
+    glEnable(GL_DEPTH_TEST);
     return EXIT_SUCCESS;
 }
 
@@ -316,6 +317,7 @@ int resizeBuffer(int width, int height)
 {
     SCREEN_WIDTH = width;
     SCREEN_HEIGHT = height;
+    return 0;
 }
 
 void mouse_callback(double xpos, double ypos)

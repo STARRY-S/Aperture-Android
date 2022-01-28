@@ -48,6 +48,7 @@ int setAAssetManager(void *pVoid)
         LOGI("Replace Local AAsetManager Pointer");
         pLocalAAsetManager = pManager;
     }
+    return 0;
 }
 
 #ifndef __ANDROID__

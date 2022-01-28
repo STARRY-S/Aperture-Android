@@ -13,8 +13,6 @@
 #include "shader.h"
 #include "main.h"
 
-const static int LINE_LENGTH = 512;
-
 #ifdef __ANDROID__
 // For load assets files.
 #endif
@@ -51,7 +49,6 @@ GLuint make_shader(GLenum type, const char *const shader_src)
     return shader;
 }
 
-#if __ANDROID__
 // Load shader in Android
 GLuint load_shader(GLenum type, const char *const shader_path)
 {
@@ -59,25 +56,25 @@ GLuint load_shader(GLenum type, const char *const shader_path)
     AAssetManager *pLocalAAsetManager = (AAssetManager *) getLocalAAssetManager();
     if (!pLocalAAsetManager) {
         LOGE("pLocalAAsetManager is NULL, failed to read file.\n");
-        return NULL;
+        return 0;
     }
     AAsset *mAsset = NULL;
     mAsset = AAssetManager_open(pLocalAAsetManager, shader_path,AASSET_MODE_UNKNOWN);
     if (mAsset == NULL) {
         LOGE("Read Text Failed: %s", shader_path);
-        return NULL;
+        return 0;
     }
     int length = AAsset_getLength(mAsset);
     LOGD("Read file %s length %d", shader_path, length);
     if (length > 1024 * 1024 * 10) {    // 10MB
         LOGE("File too large.");
-        return NULL;
+        return 0;
     }
 
     char *pBuffer = malloc(sizeof(char) * length);
     if (pBuffer == NULL) {
         LOGE("MALLOG FAILED.\n");
-        return NULL;
+        return 0;
     }
     AAsset_read(mAsset, pBuffer, length);
     pBuffer[length] = '\0';
@@ -86,38 +83,6 @@ GLuint load_shader(GLenum type, const char *const shader_path)
     free(pBuffer);
     return result;
 }
-#else
-// Load shader file in PC client
-GLuint load_shader(GLenum type, const char *const shader_path)
-{
-    GLuint result = 0;
-    FILE *fp = NULL;
-    size_t file_length = 0;
-    char *file_content = NULL;
-    char temp_line[LINE_LENGTH];
-
-    if (!(fp = fopen(shader_path, "r"))) {
-        LOGE("Open file %s failed.\n", shader_path);
-        return 1;
-    }
-    // sets the file position to end of file
-    fseek(fp, 0l, SEEK_END);
-    file_length = ftell(fp);
-    rewind(fp);
-    if (!(file_content = (char*) malloc(file_length))) {
-        LOGE("Malloc Error.\n");
-        fclose(fp);
-        return 1;
-    }
-    file_content[0] = '\0';
-    while (fgets(temp_line, LINE_LENGTH, fp))
-        strncat(file_content, temp_line, LINE_LENGTH);
-    fclose(fp);
-    result = make_shader(type, file_content);
-    free(file_content);
-    return result;
-}
-#endif
 
 // Load shader from file, then compile and attach it to program
 // return program id
