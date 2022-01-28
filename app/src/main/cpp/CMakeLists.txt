@@ -18,14 +18,20 @@ project("game_engine"
 # Gradle automatically packages shared libraries with your APK.
 set(C_FLAGS "-Wall -std=c11")
 set(CMAKE_C_FLAGS ${C_FLAGS})
-add_subdirectory(../../../libs/cglm build)
+set(CGLM_PATH "../../../libs/cglm")
+add_subdirectory(${CGLM_PATH} build)
 
-add_library( # Sets the name of the library.
+# add cglm include path
+include_directories(${CGLM_PATH}/include)
+
+add_library(
+        # Sets the name of the library.
         game_engine
 
         # Sets the library as a shared library.
         SHARED
 
+        # source files
         native-lib.c
         main.c
         main.h
@@ -38,7 +44,7 @@ add_library( # Sets the name of the library.
         camera.h
         renderer.c
         renderer.h
-        ../../../libs/cglm
+        ${CGLM_PATH}
 )
 
 # Searches for a specified prebuilt library and stores the path as a
