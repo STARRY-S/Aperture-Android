@@ -6,8 +6,9 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <moe.starrys.gameengine.GL2JNIView
-        android:id="@+id/GL2JNIView"
+
+    <moe.starrys.gameengine.GLES3JNIView
+        android:id="@+id/GLES3JNIView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
