@@ -17,8 +17,8 @@ project("game_engine"
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 set(C_FLAGS "-Wall -std=c11")
-set(CMAKE_C_FLAGS ${CXX_FLAGS})
-set(ASSIMP_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assimp/${ANDROID_ABI}/libassimp.so)
+set(CMAKE_C_FLAGS ${C_FLAGS})
+set(ASSIMP_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/assimp/${ANDROID_ABI}/libassimp.so)
 
 # add cglm include path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
