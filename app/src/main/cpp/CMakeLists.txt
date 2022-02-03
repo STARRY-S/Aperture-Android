@@ -18,11 +18,18 @@ project("game_engine"
 # Gradle automatically packages shared libraries with your APK.
 set(C_FLAGS "-Wall -std=c11")
 set(CMAKE_C_FLAGS ${C_FLAGS})
-set(CGLM_PATH "../../../libs/cglm")
-add_subdirectory(${CGLM_PATH} build)
+set(ASSIMP_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assimp/${ANDROID_ABI}/libassimp.so)
 
 # add cglm include path
-include_directories(${CGLM_PATH}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_library(
+        "assimp"
+        SHARED
+        IMPORTED
+)
+
+set_property(TARGET assimp PROPERTY IMPORTED_LOCATION ${ASSIMP_LIB_DIR})
 
 add_library(
         # Sets the name of the library.
@@ -70,4 +77,8 @@ target_link_libraries(
         log
         EGL
         GLESv3
+        assimp
 )
+
+add_custom_command(TARGET "game_engine" POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+        ${ASSIMP_LIB_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
