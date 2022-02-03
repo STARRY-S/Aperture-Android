@@ -8,10 +8,6 @@
 #include "cglm/cglm.h"
 #include "cglm/call.h"
 
-#ifndef __ANDROID__
-#include <GLFW/glfw3.h>
-#endif
-
 enum Camera_Movement {
     CAM_MOV_FORWARD,
     CAM_MOV_BACKWARD,

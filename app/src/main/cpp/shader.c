@@ -1,21 +1,18 @@
 #include <GLES3/gl3.h>
 
-#ifndef __ANDROID__
-#include <GLFW/glfw3.h>
-#else
+#ifdef __ANDROID__
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#else
+#include <GLFW/glfw3.h>
 #endif
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "shader.h"
 #include "main.h"
-
-#ifdef __ANDROID__
-// For load assets files.
-#endif
 
 // Compile shader
 GLuint make_shader(GLenum type, const char *const shader_src)

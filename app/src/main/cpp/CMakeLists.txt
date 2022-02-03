@@ -41,18 +41,12 @@ add_library(
         # source files
         native-lib.c
         main.c
-        main.h
         shader.c
-        shader.h
         texture.c
-        texture.h
-        stb_image.h
         camera.c
-        camera.h
         renderer.c
-        renderer.h
-        test-assimp.h
-        test-assimp.c
+        mesh.c
+        model.c
         ${CGLM_PATH}
 )
 set_target_properties(game_engine PROPERTIES LINKER_LANGUAGE C)

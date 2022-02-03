@@ -4,7 +4,6 @@
 #include "shader.h"
 #include "texture.h"
 #include <GLES3/gl3.h>
-#include "test-assimp.h"
 
 void mouse_callback(double xpos, double ypos);
 
@@ -104,13 +103,6 @@ bool firstMouse = true;
 
 int setup(int width, int height)
 {
-    // test assimp import file
-    bool test_result =  DoTheImportThing("testfile");
-    if (test_result) {
-        LOGE("Assimp Import success\n");
-    } else {
-        LOGE("Setup: Assimp Import failed\n");
-    }
     SCREEN_WIDTH = width;
     SCREEN_HEIGHT = height;
     virtual_xpos = SCREEN_WIDTH;    // for test

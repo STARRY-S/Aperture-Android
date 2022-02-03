@@ -11,10 +11,10 @@ Things To Do
 ----
 
 - [x] Render [OpenGL Demo](https://github.com/STARRY-S/OpenGL-Demo) by using OpenGL ES3.
-- [ ] Camera movement, user interactive. (Still working)
-- [ ] Multi-platform (both Android and x86, x86_64, linux and windows). (Unfinished)
-- [ ] Mesh and Texture importer. (Haven't started yet)
-- [ ] GUI tools. (Currently don't know how to do it)
+- [ ] Camera movement, user interactive. (Still working...)
+- [ ] Multi-platform (both Android and x86, x86_64, linux and windows). (Currently support Android, Linux)
+- [ ] Mesh and Texture importer. (Still working...)
+- [ ] GUI tools. (Still Don't know how to do it)
 - [ ] Sound, Physic, Network, etc...
 
 Screenshot
