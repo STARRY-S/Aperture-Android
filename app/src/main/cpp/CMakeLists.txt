@@ -17,7 +17,7 @@ project("game_engine"
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 set(C_FLAGS "-Wall -std=c11")
-set(CMAKE_C_FLAGS ${C_FLAGS})
+set(CMAKE_C_FLAGS ${CXX_FLAGS})
 set(ASSIMP_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assimp/${ANDROID_ABI}/libassimp.so)
 
 # add cglm include path
@@ -51,8 +51,11 @@ add_library(
         camera.h
         renderer.c
         renderer.h
+        test-assimp.h
+        test-assimp.c
         ${CGLM_PATH}
 )
+set_target_properties(game_engine PROPERTIES LINKER_LANGUAGE C)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
