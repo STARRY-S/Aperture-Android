@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/app/libs/assimp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/libs/cglm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/src/main/cpp/cglm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/src/main/cpp/include/cglm" vcs="Git" />
