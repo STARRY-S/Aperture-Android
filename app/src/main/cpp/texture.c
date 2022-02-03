@@ -31,7 +31,7 @@ GLuint load_texture(const char *const path, int format)
     unsigned char *fileData = (unsigned char *) AAsset_getBuffer(pathAsset);
     data = stbi_load_from_memory(fileData, assetLength, &width, &height, &nrChannels, 0);
     AAsset_close(pathAsset);
-    LOGE("path %s width: %d, height: %d, channel %d\n", path, width, height, nrChannels);
+    LOGD("path %s width: %d, height: %d, channel %d\n", path, width, height, nrChannels);
 #else
     data = stbi_load(path, &width, &height, &nrChannels, 0);
 #endif

@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
         mView = new GLES3JNIView(getApplication());
         setContentView(mView);
-        mView.setNativeAssetManager(getAssets());
+        GLES3JNILib.setNativeAssetManager(getAssets());
     }
     private ActivityMainBinding binding;
 }
