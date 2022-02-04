@@ -8,6 +8,8 @@
 #include <GLES3/gl3.h>
 #include <stb_image.h>
 
+int load_model(struct Model *pModel, const char *path);
+int process_node(struct Model *pModel, struct aiNode *node, const struct aiScene *scene);
 unsigned int texture_from_file(const char *path, const char* directory, bool gamma);
 int model_texture_loaded_push_back(struct Model *pModel, struct Texture *pTexture);
 struct Mesh *process_mesh(struct Model *pModel, struct aiMesh *mesh, const struct aiScene *scene);
@@ -16,9 +18,53 @@ int model_mesh_push_back(struct Model *pModel, struct Mesh *pMesh);
 struct Vector *load_material_textures(
     struct Model *pModel, struct aiMaterial *mat, enum aiTextureType type, const char* typeName);
 
-int load_model(const char *pModelName)
+/**
+ * Model constructor
+ * @param path - file path
+ * @param gamma - default to null
+ * @return GE_Types
+ */
+int init_model(struct Model *pModel, const char *path, bool gamma)
+{
+    if (pModel == NULL) {
+        return GE_ERROR_INVALID_POINTER;
+    }
+    LOGD("BREAK2-1");
+
+    return load_model(pModel, path);
+}
+
+int load_model(struct Model *pModel, const char *path)
 {
     // TODO: read file from assimp importer
+    if (pModel == NULL) {
+        return GE_ERROR_INVALID_POINTER;
+    }
+    LOGD("BREAK2-2");
+
+    // Start the import on the given file with some example postprocessing
+    // Usually - if speed is not the most important aspect for you - you'll t
+    // probably to request more postprocessing than we do in this example.
+    const char* sphere = "s 0 0 0 10";
+    const struct aiScene* scene =
+            aiImportFileFromMemory(sphere, strlen(sphere),0, ".nff");
+    // If the import failed, report it
+    if(!scene)
+    {
+        // TODO: DoTheErrorLogging( aiGetErrorString());
+        LOGE("Assimp import failed.");
+        return GE_ERROR_ASSIMP_IMPORT_FAILED;
+    }
+    LOGD("BREAK2-3");
+
+    // Now we can access the file's contents
+    // TODO: Do the process scene things..
+    process_node(pModel, scene->mRootNode, scene);
+    LOGD("BREAK2-4");
+
+    // We're done. Release all resources associated with this import
+    aiReleaseImport(scene);
+    LOGD("BREAK2-5");
 
     return GE_ERROR_SUCCESS;
 }
@@ -235,9 +281,9 @@ struct Vector *load_material_textures(struct Model *pModel,
             // texture.type = typeName;
             // texture.path = str.data();
 
-            vector_push_back(pVecTextures, (const char*) &texture);
             // textures.push_back(texture);
             // textures_loaded.push_back(texture);
+            vector_push_back(pVecTextures, (const char*) &texture);
             // store it as texture loaded for entire model,
             // to ensure we won't unnecessary load duplicate textures.
             model_texture_loaded_push_back(pModel, &texture);
@@ -340,7 +386,7 @@ unsigned int texture_from_file(const char *path, const char *directory, bool gam
     return 0;
 }
 
-int draw_model(unsigned int shader)
+int draw_model(struct Model *pModel, unsigned int shader)
 {
     return 0;
 }

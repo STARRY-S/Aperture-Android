@@ -22,7 +22,7 @@ GLuint load_texture(const char *const path, int format)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     int width, height, nrChannels;
-    // stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(true);
     unsigned char *data = NULL;
 #ifdef __ANDROID__
     AAssetManager *pManager = getLocalAAssetManager();

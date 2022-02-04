@@ -4,21 +4,90 @@
 #include "shader.h"
 #include "texture.h"
 #include <GLES3/gl3.h>
-#include "model.h"
-#include "mesh.h"
 
 void mouse_callback(double xpos, double ypos);
 
-/*
+float vertices[] = {
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f
+};
+
+float floorVertices[] = {
+//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
+        10.0f,  10.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
+        10.0f, -10.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
+        -10.0f, -10.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
+        -10.0f,  10.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,   // 左上
+        -10.0f, -10.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
+        10.0f,  10.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f     // 右上
+};
+
+vec3 cubePositions[] = {
+        { -3.0f,  -1.5f,  2.0f},
+        { 1.0f,  01.5f, -1.0f},
+        {-1.5f, 0.5f, 2.0f},
+        {-3.5f, 2.5f, -4.0f},
+        { 3.0f, 1.5f, -5.0f},
+
+        {-1.5f,  -1.5f, -10.0f},
+        { 0.5f, -1.5f, -8.5f},
+        { 4.5f,  2.5f, -12.0f},
+        { 6.5f,  -1.5f, -5.5f},
+        {-1.5f,  -1.5f, 2.5f},
+
+        {-1.5f,  -1.5f, -1.5f},
+        {1.5f,  -1.5f, -4.5f},
+        {-2.5f,  -1.5f, 4.5f},
+        {-4.5f,  -1.5f, -2.5f},
+        {-0.5f,  -1.5f, 2.5f}
+};
+
 vec3 lightPos = {-1.5f, -0.5f, -2.5f};
 vec3 lightAmbient = {0.2f, 0.2f, 0.2f};
 vec3 lightDiffuse = {0.8f, 0.8f, 0.8f};
 vec3 lightSpecular = {1.0f, 0.9f, 0.75f};
 float materialShininess = 64.0f;
-*/
 int SCREEN_WIDTH = 0, SCREEN_HEIGHT = 0;
 
-/*
 int textureNum = 0;
 GLuint textures[10];
 GLuint floorTexture = 0;
@@ -26,14 +95,11 @@ GLuint lightTexture = 0;
 GLuint cubeShader = 0, floorShader = 0;
 GLuint floorVAO = 0, floorVBO = 0;
 GLuint VBO = 0, cubeVAO = 0;
-*/
 struct Camera *camera = NULL;
 
 float lastX = 400, lastY = 300;
 double virtual_xpos = 0.0, virtual_ypox = 0.0;
 bool firstMouse = true;
-GLuint ourShader = 0;
-struct Model model;
 
 int setup(int width, int height)
 {
@@ -41,22 +107,12 @@ int setup(int width, int height)
     SCREEN_HEIGHT = height;
     virtual_xpos = SCREEN_WIDTH;    // for test
     glViewport(0, 0, width, height);
+    cubeShader =
+            load_program("glsl/cube.v.glsl", "glsl/cube.f.glsl");
+    floorShader =
+            load_program("glsl/floor.v.glsl", "glsl/floor.f.glsl");
 
-    LOGD("BREAK1");
-    ourShader =
-        load_program("glsl/model_loading.vs.glsl",
-                     "glsl/model_loading.fs.glsl");
-    LOGD("BREAK2");
 
-    // TODO: set model path name
-    init_model(&model, "PATH_NAME", false);
-    LOGD("BREAK3");
-
-    // camera
-    camera = initCamera();
-
-/*
-    // old below
     glGenVertexArrays(1, &cubeVAO);
     glBindVertexArray(cubeVAO);
 
@@ -125,13 +181,15 @@ int setup(int width, int height)
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
                           8 * sizeof(float), (void*) (6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+
+    // camera
+    camera = initCamera();
+
     // vec3 materialSpecular = {0.5f, 0.5f, 0.5f};
 
     glUseProgram(floorShader);
     shaderSetInt(floorShader, "texture0", 0);
     glActiveTexture(GL_TEXTURE0);
-
-*/
 
     glEnable(GL_DEPTH_TEST);
     return EXIT_SUCCESS;
@@ -143,7 +201,6 @@ int render()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /*
     // hikari
     glUseProgram(cubeShader);
     shaderSetVec3(cubeShader, "light.position", lightPos);
@@ -242,39 +299,6 @@ int render()
         offset = -offset;
     }
     mouse_callback(virtual_xpos, virtual_ypox);
-    */
-
-    glUseProgram(ourShader);
-    // view/projection transformations
-    // view and projection transform
-    mat4 view;
-    mat4 projection;
-    glm_mat4_identity(view);
-    glm_mat4_identity(projection);
-    GetViewMatrix(&view);
-
-    glm_perspective(
-            glm_rad(camera->zoom),
-            (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
-            0.1, 100.0, projection
-    );
-
-    shaderSetMat4(ourShader, "view", view[0]);
-    shaderSetMat4(ourShader, "projection", projection[0]);
-
-    // render the loaded model
-    mat4 model;
-    glm_mat4_identity(model);
-//    vec3 rockPosition = {0.0f, -2.0f, -5.0f};
-//    glm_translate(rockModel, rockPosition);
-    vec3 model_position = {0.0f, 0.0f, 0.0f};
-    glm_translate(model, model_position); // translate it down so it's at the center of the scene
-    vec3 model_scale = {1.0f, 1.0f, 1.0f};
-    glm_scale(model, model_scale);  // it's a bit too big for our scene, so scale it down
-    shaderSetMat4(ourShader, "model", model);
-
-    // ourModel.Draw(ourShader);
-    draw_model(&model, ourShader);
 
     // unbind
     glBindVertexArray(0);
@@ -283,9 +307,9 @@ int render()
 
 int finish()
 {
-    // glDeleteVertexArrays(1, &cubeVAO);
-    // glDeleteBuffers(1, &VBO);
-    // glDeleteProgram(cubeShader);
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(cubeShader);
     return EXIT_SUCCESS;
 }
 

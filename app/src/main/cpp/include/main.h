@@ -40,6 +40,7 @@ typedef enum {
     GE_ERROR_INVALID_PARAMETER, // invalid param
     GE_ERROR_MALLOC_FAILED,     // malloc failed
     GE_ERROR_MESH_UNINITIALIZED,// mesh uninitialized
+    GE_ERROR_ASSIMP_IMPORT_FAILED, // assimp import failed
     GE_ERROR_INIT_FAILED,       // initialize failed
     GE_ERROR_RENDER_FAILED,
     GE_ERROR_TEXTURE_FAILED,
