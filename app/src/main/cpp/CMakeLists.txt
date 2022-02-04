@@ -34,10 +34,8 @@ set_property(TARGET assimp PROPERTY IMPORTED_LOCATION ${ASSIMP_LIB_DIR})
 add_library(
         # Sets the name of the library.
         game_engine
-
         # Sets the library as a shared library.
         SHARED
-
         # source files
         native-lib.c
         main.c
@@ -47,7 +45,7 @@ add_library(
         renderer.c
         mesh.c
         model.c
-        ${CGLM_PATH}
+        cvector.c
 )
 set_target_properties(game_engine PROPERTIES LINKER_LANGUAGE C)
 

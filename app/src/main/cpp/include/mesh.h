@@ -1,4 +1,5 @@
 #ifndef __MESH_H__
+#define __MESH_H__
 #include "main.h"
 
 #define MAX_BONE_INFLUENCE 4
@@ -36,10 +37,14 @@ struct Mesh {
     unsigned int EBO;
 };
 
-int initMesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
+int init_mesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
              unsigned int *pIndices, int iIndicesLength,
              struct Texture *pTexture, int iTextureLength);
-int freeMesh(struct Mesh *pMesh);
-int drawMesh(struct Mesh *pMesh, unsigned int shader);
+int free_mesh(struct Mesh *pMesh);
+int copy_mesh(struct Mesh *pNewMesh, struct Mesh *pOldMesh);
+int draw_mesh(struct Mesh *pMesh, unsigned int shader);
+
+int texture_set_type(struct Texture *pTexture, const char *typeName);
+int texture_set_path(struct Texture *pTexture, const char *pathName);
 
 #endif // __MESH_H__

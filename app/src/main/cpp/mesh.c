@@ -9,8 +9,8 @@
 #include "shader.h"
 
 // private method
-int setupMesh(struct Mesh *pMesh);
-bool isValidMesh(struct Mesh *pMesh);
+int setup_mesh(struct Mesh *pMesh);
+bool is_valid_mesh(struct Mesh *pMesh);
 
 /**
  * Mesh Constructor
@@ -23,7 +23,7 @@ bool isValidMesh(struct Mesh *pMesh);
  * @param iTextureLength
  * @return - GE_Types
  */
-int initMesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
+int init_mesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
         unsigned int *pIndices, int iIndicesLength,
         struct Texture *pTexture, int iTextureLength)
 {
@@ -59,7 +59,7 @@ int initMesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
     memcpy(pNewTexture, pTexture, sizeof(struct Texture) * iTextureLength);
     pMesh->pTextures = pNewTexture;
 
-    setupMesh(pMesh);
+    setup_mesh(pMesh);
     return 0;
 }
 
@@ -68,7 +68,7 @@ int initMesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
  * @param pMesh
  * @return 0 if success
  */
-int freeMesh(struct Mesh *pMesh)
+int free_mesh(struct Mesh *pMesh)
 {
     if (pMesh == NULL) {
         return 0;
@@ -94,11 +94,57 @@ int freeMesh(struct Mesh *pMesh)
 }
 
 /**
+ * Copy mesh
+ * @param pNewMesh
+ * @param pOldMesh
+ * @return GE_Types
+ */
+int copy_mesh(struct Mesh *pNewMesh, struct Mesh *pOldMesh)
+{
+    if (pNewMesh == NULL || pOldMesh == NULL) {
+        return GE_ERROR_INVALID_POINTER;
+    }
+
+    if (pNewMesh->pTextures != NULL) {
+        free(pNewMesh->pTextures);
+        pNewMesh->pTextures = NULL;
+    }
+    pNewMesh->iTextureLength = pOldMesh->iTextureLength;
+    pNewMesh->pTextures = malloc(pNewMesh->iTextureLength * sizeof(struct Texture));
+    memcpy(pNewMesh->pTextures, pOldMesh->pTextures,
+           pNewMesh->iTextureLength * sizeof(struct Texture));
+
+    if (pNewMesh->pIndices != NULL) {
+        free(pNewMesh->pIndices);
+        pNewMesh->pIndices = NULL;
+    }
+    pNewMesh->iIndicesLength = pOldMesh->iIndicesLength;
+    pNewMesh->pIndices = malloc(pNewMesh->iIndicesLength * sizeof(unsigned int));
+    memcpy(pNewMesh->pIndices, pOldMesh->pIndices,
+           pNewMesh->iIndicesLength * sizeof(unsigned int));
+
+    if (pNewMesh->pVertices != NULL) {
+        free(pNewMesh->pVertices);
+        pNewMesh->pVertices = NULL;
+    }
+    pNewMesh->iVerticesLength = pOldMesh->iVerticesLength;
+    pNewMesh->pVertices = malloc(pNewMesh->iVerticesLength * sizeof(struct Vertex));
+    memcpy(pNewMesh->pVertices, pOldMesh->pVertices,
+           pNewMesh->iVerticesLength * sizeof(struct Vertex));
+
+    pNewMesh->VAO = pOldMesh->VAO;
+    pNewMesh->VBO = pOldMesh->VBO;
+    pNewMesh->EBO = pOldMesh->EBO;
+
+    return 0;
+}
+
+/**
  * private, setup mesh
  * @param pMesh
  * @return GE_Types
  */
-int setupMesh(struct Mesh *pMesh)
+int setup_mesh(struct Mesh *pMesh)
 {
     if (!pMesh) {
         return GE_ERROR_INVALID_POINTER;
@@ -139,7 +185,7 @@ int setupMesh(struct Mesh *pMesh)
  * @param pMesh
  * @return true: initialized, false: not initialized
  */
-bool isValidMesh(struct Mesh *pMesh)
+bool is_valid_mesh(struct Mesh *pMesh)
 {
     if (pMesh == NULL) {
         return false;
@@ -165,9 +211,9 @@ bool isValidMesh(struct Mesh *pMesh)
  * @param pMesh
  * @param shader
  */
-int drawMesh(struct Mesh *pMesh, unsigned int shader)
+int draw_mesh(struct Mesh *pMesh, unsigned int shader)
 {
-    if (!isValidMesh(pMesh)) {
+    if (!is_valid_mesh(pMesh)) {
         return GE_ERROR_MESH_UNINITIALIZED;
     }
 
@@ -207,4 +253,34 @@ int drawMesh(struct Mesh *pMesh, unsigned int shader)
     // always good practice to set everything back to defaults once configured :)
     glActiveTexture(GL_TEXTURE0);
     return GE_ERROR_SUCCESS;
+}
+
+int texture_set_type(struct Texture *pTexture, const char *typeName)
+{
+    if (pTexture == NULL || typeName == NULL) {
+        return GE_ERROR_INVALID_POINTER;
+    }
+
+    if (pTexture->type != NULL) {
+        free(pTexture->type);
+        pTexture->type = NULL;
+    }
+    pTexture->type = malloc(sizeof(char) * (strlen(typeName) + 1) );
+    strcpy(pTexture->type, typeName);
+    return 0;
+}
+
+int texture_set_path(struct Texture *pTexture, const char *pathName)
+{
+    if (pTexture == NULL || pathName == NULL) {
+        return GE_ERROR_INVALID_POINTER;
+    }
+
+    if (pTexture->path != NULL) {
+        free(pTexture->path);
+        pTexture->path = NULL;
+    }
+    pTexture->path = malloc(sizeof(char) * (strlen(pathName) + 1) );
+    strcpy(pTexture->path, pathName);
+    return 0;
 }
