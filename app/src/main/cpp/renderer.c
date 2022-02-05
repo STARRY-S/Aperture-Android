@@ -7,6 +7,9 @@
 #include "model.h"
 #include "mesh.h"
 
+#define MODEL_FILE_NAME "backpack/backpack.obj"
+#define MODEL_FILE_FORMAT ".obj"
+
 void mouse_callback(double xpos, double ypos);
 
 /*
@@ -42,15 +45,12 @@ int setup(int width, int height)
     virtual_xpos = SCREEN_WIDTH;    // for test
     glViewport(0, 0, width, height);
 
-    LOGD("BREAK1");
     ourShader =
         load_program("glsl/model_loading.vs.glsl",
                      "glsl/model_loading.fs.glsl");
-    LOGD("BREAK2");
 
     // TODO: set model path name
-    init_model(&model, "PATH_NAME", false);
-    LOGD("BREAK3");
+    init_model(&model, MODEL_FILE_NAME, MODEL_FILE_FORMAT, false);
 
     // camera
     camera = initCamera();
@@ -263,15 +263,15 @@ int render()
     shaderSetMat4(ourShader, "projection", projection[0]);
 
     // render the loaded model
-    mat4 model;
-    glm_mat4_identity(model);
+    mat4 mat_model;
+    glm_mat4_identity(mat_model);
 //    vec3 rockPosition = {0.0f, -2.0f, -5.0f};
 //    glm_translate(rockModel, rockPosition);
     vec3 model_position = {0.0f, 0.0f, 0.0f};
-    glm_translate(model, model_position); // translate it down so it's at the center of the scene
+    glm_translate(mat_model, model_position); // translate it down so it's at the center of the scene
     vec3 model_scale = {1.0f, 1.0f, 1.0f};
-    glm_scale(model, model_scale);  // it's a bit too big for our scene, so scale it down
-    shaderSetMat4(ourShader, "model", model);
+    glm_scale(mat_model, model_scale);  // it's a bit too big for our scene, so scale it down
+    shaderSetMat4(ourShader, "model", mat_model);
 
     // ourModel.Draw(ourShader);
     draw_model(&model, ourShader);

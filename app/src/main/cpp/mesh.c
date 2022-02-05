@@ -31,32 +31,39 @@ int init_mesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
         return GE_ERROR_INVALID_POINTER;
     }
 
-    if (iVerticesLength <= 0 || iIndicesLength <= 0 || iTextureLength <= 0) {
-        return GE_ERROR_INVALID_PARAMETER;
-    }
+    memset(pMesh, 0, sizeof(struct Mesh));
 
     struct Vertex *pNewVertex = NULL;
-    pNewVertex = (struct Vertex *) malloc(sizeof(struct Vertex) * iVerticesLength);
-    if (pNewVertex == NULL) {
-        return GE_ERROR_MALLOC_FAILED;
+    if (iVerticesLength > 0) {
+        pNewVertex = (struct Vertex *) malloc(sizeof(struct Vertex) * iVerticesLength);
+        if (pNewVertex == NULL) {
+            return GE_ERROR_MALLOC_FAILED;
+        }
+        memcpy(pNewVertex, pVertices, sizeof(struct Vertex) * iVerticesLength);
     }
-    memcpy(pNewVertex, pVertices, sizeof(struct Vertex) * iVerticesLength);
+    pMesh->iVerticesLength = iVerticesLength;
     pMesh->pVertices = pNewVertex;
 
     unsigned int *pNewIndices = NULL;
-    pNewIndices = (unsigned int *) malloc(sizeof(unsigned int) * iIndicesLength);
-    if (pNewIndices == NULL) {
-        return GE_ERROR_MALLOC_FAILED;
+    if (iIndicesLength > 0) {
+        pNewIndices = (unsigned int *) malloc(sizeof(unsigned int) * iIndicesLength);
+        if (pNewIndices == NULL) {
+            return GE_ERROR_MALLOC_FAILED;
+        }
+        memcpy(pNewIndices, pIndices, sizeof(unsigned int) * iIndicesLength);
     }
-    memcpy(pNewIndices, pIndices, sizeof(unsigned int ) * iIndicesLength);
+    pMesh->iIndicesLength = iIndicesLength;
     pMesh->pIndices = pNewIndices;
 
     struct Texture *pNewTexture = NULL;
-    pNewTexture = (struct Texture *) malloc(sizeof(struct Texture) * iTextureLength);
-    if (pNewTexture == NULL) {
-        return GE_ERROR_MALLOC_FAILED;
+    if (iTextureLength > 0) {
+        pNewTexture = (struct Texture *) malloc(sizeof(struct Texture) * iTextureLength);
+        if (pNewTexture == NULL) {
+            return GE_ERROR_MALLOC_FAILED;
+        }
+        memcpy(pNewTexture, pTexture, sizeof(struct Texture) * iTextureLength);
     }
-    memcpy(pNewTexture, pTexture, sizeof(struct Texture) * iTextureLength);
+    pMesh->iTextureLength = iTextureLength;
     pMesh->pTextures = pNewTexture;
 
     setup_mesh(pMesh);
@@ -104,43 +111,52 @@ int copy_mesh(struct Mesh *pNewMesh, struct Mesh *pOldMesh)
     if (pNewMesh == NULL || pOldMesh == NULL) {
         return GE_ERROR_INVALID_POINTER;
     }
+    LOGD("Start copy mesh.");
 
-    if (pNewMesh->pTextures != NULL) {
-        free(pNewMesh->pTextures);
-        pNewMesh->pTextures = NULL;
-    }
+//    if (pNewMesh->pTextures != NULL) {
+//        free(pNewMesh->pTextures);
+//        pNewMesh->pTextures = NULL;
+//        LOGD("Free ed old mesh Textures.");
+//    }
     pNewMesh->iTextureLength = pOldMesh->iTextureLength;
-    pNewMesh->pTextures = malloc(pNewMesh->iTextureLength * sizeof(struct Texture));
-    memcpy(pNewMesh->pTextures, pOldMesh->pTextures,
-           pNewMesh->iTextureLength * sizeof(struct Texture));
-
-    if (pNewMesh->pIndices != NULL) {
-        free(pNewMesh->pIndices);
-        pNewMesh->pIndices = NULL;
+    if (pOldMesh->iTextureLength > 0) {
+        pNewMesh->pTextures = malloc(pNewMesh->iTextureLength * sizeof(struct Texture));
+        memcpy(pNewMesh->pTextures, pOldMesh->pTextures,
+               pNewMesh->iTextureLength * sizeof(struct Texture));
     }
+
+//    if (pNewMesh->pIndices != NULL) {
+//        free(pNewMesh->pIndices);
+//        pNewMesh->pIndices = NULL;
+//    }
     pNewMesh->iIndicesLength = pOldMesh->iIndicesLength;
-    pNewMesh->pIndices = malloc(pNewMesh->iIndicesLength * sizeof(unsigned int));
-    memcpy(pNewMesh->pIndices, pOldMesh->pIndices,
-           pNewMesh->iIndicesLength * sizeof(unsigned int));
-
-    if (pNewMesh->pVertices != NULL) {
-        free(pNewMesh->pVertices);
-        pNewMesh->pVertices = NULL;
+    if (pOldMesh->iIndicesLength > 0) {
+        pNewMesh->pIndices = malloc(pNewMesh->iIndicesLength * sizeof(unsigned int));
+        memcpy(pNewMesh->pIndices, pOldMesh->pIndices,
+               pNewMesh->iIndicesLength * sizeof(unsigned int));
     }
+
+//    if (pNewMesh->pVertices != NULL) {
+//        free(pNewMesh->pVertices);
+//        pNewMesh->pVertices = NULL;
+//    }
     pNewMesh->iVerticesLength = pOldMesh->iVerticesLength;
-    pNewMesh->pVertices = malloc(pNewMesh->iVerticesLength * sizeof(struct Vertex));
-    memcpy(pNewMesh->pVertices, pOldMesh->pVertices,
-           pNewMesh->iVerticesLength * sizeof(struct Vertex));
+    if (pOldMesh->iVerticesLength > 0) {
+        pNewMesh->pVertices = malloc(pNewMesh->iVerticesLength * sizeof(struct Vertex));
+        memcpy(pNewMesh->pVertices, pOldMesh->pVertices,
+               pNewMesh->iVerticesLength * sizeof(struct Vertex));
+    }
 
     pNewMesh->VAO = pOldMesh->VAO;
     pNewMesh->VBO = pOldMesh->VBO;
     pNewMesh->EBO = pOldMesh->EBO;
+    LOGD("Finish copy mesh.");
 
     return 0;
 }
 
 /**
- * private, setup mesh
+ * private, setup mesh, generate GL buffers.
  * @param pMesh
  * @return GE_Types
  */
@@ -208,8 +224,9 @@ bool is_valid_mesh(struct Mesh *pMesh)
 
 /**
  * Draw Mesh
- * @param pMesh
- * @param shader
+ * @param pMesh - the pointer to the mesh
+ * @param shader - shader id
+ * @return GE_Types
  */
 int draw_mesh(struct Mesh *pMesh, unsigned int shader)
 {

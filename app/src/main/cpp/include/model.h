@@ -14,7 +14,7 @@ struct Model {
     char *pDirectory;   // malloc, need free
 };
 
-int init_model(struct Model *pModel, const char *path, bool gamma);
+int init_model(struct Model *pModel, const char *path, const char *format, bool gamma);
 int draw_model(struct Model *pModel, unsigned int shader);
 
 #endif

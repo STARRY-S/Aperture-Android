@@ -50,16 +50,18 @@ int init_vector(struct Vector *pVector, int iVectorType)
         return GE_ERROR_INVALID_POINTER;
     }
 
+    LOGD("Start init vector: 0X%X", (unsigned int) pVector);
+    pVector->type = iVectorType;
     int size = get_vector_data_type_size(pVector);
     pVector->capacity = DEFAULT_INIT_CAPACITY;
     pVector->data = malloc(size * DEFAULT_INIT_CAPACITY);
-    memset(pVector->data, 0, size * DEFAULT_INIT_CAPACITY);
-    pVector->length = 0;
-    pVector->type = iVectorType;
-
     if (pVector->data == NULL) {
+        LOGE("Malloc failed for vector.");
         return GE_ERROR_MALLOC_FAILED;
     }
+    memset(pVector->data, 0, size * DEFAULT_INIT_CAPACITY);
+    pVector->length = 0;
+    LOGD("Finished initialized vector.");
 
     return GE_ERROR_SUCCESS;
 }
@@ -124,9 +126,10 @@ int vector_push_back(struct Vector *pVector, const char* data)
         }
         pVector->capacity *= 2;
     }
-    int offset = size * pVector->length / sizeof(char);
+    int offset = size * (pVector->length ) / sizeof(char);
     char *pNewData = pVector->data + offset;
     memcpy(pNewData, data, size);
+    pVector->length++;
 
     return 0;
 }
@@ -157,9 +160,10 @@ int vector_insert_back(struct Vector *pVector, char *pStart, size_t size)
         pVector->capacity *= 2;
     }
     int type_size = get_vector_data_type_size(pVector);
-    int offset = type_size * pVector->length / (int) sizeof(char);
+    int offset = type_size * (pVector->length ) / (int) sizeof(char);
     char *pNewData = pVector->data + offset;
     memcpy(pNewData, pStart, size);
+    pVector->length += (int) size / get_vector_data_type_size(pVector);
 
     return 0;
 }

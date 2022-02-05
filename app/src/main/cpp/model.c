@@ -2,13 +2,18 @@
 #include "model.h"
 #include "cvector.h"
 
+#ifdef __ANDROID__
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+#endif
+
 #include <assimp/cimport.h>        // Plain-C interface
 #include <assimp/scene.h>          // Output data structure
 #include <assimp/postprocess.h>    // Post processing flags
 #include <GLES3/gl3.h>
 #include <stb_image.h>
 
-int load_model(struct Model *pModel, const char *path);
+int load_model(struct Model *pModel, const char *path, const char *format);
 int process_node(struct Model *pModel, struct aiNode *node, const struct aiScene *scene);
 unsigned int texture_from_file(const char *path, const char* directory, bool gamma);
 int model_texture_loaded_push_back(struct Model *pModel, struct Texture *pTexture);
@@ -21,68 +26,83 @@ struct Vector *load_material_textures(
 /**
  * Model constructor
  * @param path - file path
+ * @param format - file format, or null
  * @param gamma - default to null
  * @return GE_Types
  */
-int init_model(struct Model *pModel, const char *path, bool gamma)
+int init_model(struct Model *pModel, const char *path, const char *format, bool gamma)
 {
     if (pModel == NULL) {
         return GE_ERROR_INVALID_POINTER;
     }
-    LOGD("BREAK2-1");
 
-    return load_model(pModel, path);
+    return load_model(pModel, path, format);
 }
 
-int load_model(struct Model *pModel, const char *path)
+/**
+ * Load model from android asset manager.
+ * @param pModel
+ * @param path - file path
+ * @param format - can be null or empty string
+ * @return GE_Types
+ */
+int load_model(struct Model *pModel, const char *path, const char *format)
 {
     // TODO: read file from assimp importer
     if (pModel == NULL) {
         return GE_ERROR_INVALID_POINTER;
     }
-    LOGD("BREAK2-2");
 
     // Start the import on the given file with some example postprocessing
     // Usually - if speed is not the most important aspect for you - you'll t
     // probably to request more postprocessing than we do in this example.
-    const char* sphere = "s 0 0 0 10";
-    const struct aiScene* scene =
-            aiImportFileFromMemory(sphere, strlen(sphere),0, ".nff");
+    AAssetManager *pManager = getLocalAAssetManager();
+    AAsset *pathAsset = AAssetManager_open(pManager, path, AASSET_MODE_UNKNOWN);
+    off_t assetLength = AAsset_getLength(pathAsset);
+    const char *fileData = (const char *) AAsset_getBuffer(pathAsset);
+
+    const struct aiScene* scene = aiImportFileFromMemory(
+            fileData, assetLength,
+            aiProcess_Triangulate | aiProcess_GenSmoothNormals
+            | aiProcess_FlipUVs | aiProcess_CalcTangentSpace, format);
     // If the import failed, report it
-    if(!scene)
+    if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         // TODO: DoTheErrorLogging( aiGetErrorString());
         LOGE("Assimp import failed.");
         return GE_ERROR_ASSIMP_IMPORT_FAILED;
     }
-    LOGD("BREAK2-3");
 
     // Now we can access the file's contents
     // TODO: Do the process scene things..
     process_node(pModel, scene->mRootNode, scene);
-    LOGD("BREAK2-4");
 
     // We're done. Release all resources associated with this import
-    aiReleaseImport(scene);
-    LOGD("BREAK2-5");
+    // TODO: Fix release crash - seems it is fixed now (maybe not)
+    // aiReleaseImport(scene);
 
     return GE_ERROR_SUCCESS;
 }
 
 int process_node(struct Model *pModel, struct aiNode *node, const struct aiScene *scene)
 {
+    if (pModel == NULL || node == NULL || scene == NULL) {
+        return GE_ERROR_INVALID_POINTER;
+    }
     // process each mesh located at the current node
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         // the node object only contains indices to index the actual objects in the scene.
         // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
         struct aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        pModel->iMeshLength++;
+        // meshes.push_back(processMesh(mesh, scene));
         struct Mesh *pNewMesh = process_mesh(pModel, mesh, scene);
         model_mesh_push_back(pModel, pNewMesh);
-        free(pNewMesh);
+        // TODO: free mesh
+        free_mesh(pNewMesh);
         pNewMesh = NULL;
     }
+
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
     for(unsigned int i = 0; i < node->mNumChildren; i++)
     {
@@ -123,52 +143,36 @@ struct Mesh *process_mesh(struct Model *pModel, struct aiMesh *mesh, const struc
         struct Vertex vertex;
         vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
         // positions
-        vector[0] = mesh->mVertices[i].x;
-        vector[1] = mesh->mVertices[i].y;
-        vector[2] = mesh->mVertices[i].z;
-        vertex.Position[0] = vector[0];
-        vertex.Position[1] = vector[1];
-        vertex.Position[2] = vector[2];
+        vertex.Position[0] = mesh->mVertices[i].x;
+        vertex.Position[1] = mesh->mVertices[i].y;
+        vertex.Position[2] = mesh->mVertices[i].z;
 
         // normals
         if (mesh->mNormals != NULL)
         {
-            vector[0] = mesh->mNormals[i].x;
-            vector[1] = mesh->mNormals[i].y;
-            vector[2] = mesh->mNormals[i].z;
-            vertex.Normal[0] = vector[0];
-            vertex.Normal[1] = vector[1];
-            vertex.Normal[2] = vector[2];
+            vertex.Normal[0] = mesh->mNormals[i].x;
+            vertex.Normal[1] = mesh->mNormals[i].y;
+            vertex.Normal[2] = mesh->mNormals[i].z;
         }
         // texture coordinates
         if(mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
         {
-            vec2 vec;
             // a vertex can contain up to 8 different texture coordinates.
             // We thus make the assumption that we won't
             // use models where a vertex can have multiple texture coordinates
             // so we always take the first set (0).
-            vec[0] = mesh->mTextureCoords[0][i].x;
-            vec[1] = mesh->mTextureCoords[0][i].y;
-            vertex.TexCoords[0] = vec[0];
-            vertex.TexCoords[1] = vec[1];
+            vertex.TexCoords[0] = mesh->mTextureCoords[0][i].x;
+            vertex.TexCoords[1] = mesh->mTextureCoords[0][i].y;
 
             // tangent
-            vector[0] = mesh->mTangents[i].x;
-            vector[1] = mesh->mTangents[i].y;
-            vector[2] = mesh->mTangents[i].z;
-            vertex.Tangent[0] = vector[0];
-            vertex.Tangent[1] = vector[1];
-            vertex.Tangent[2] = vector[2];
+            vertex.Tangent[0] = mesh->mTangents[i].x;
+            vertex.Tangent[1] = mesh->mTangents[i].y;
+            vertex.Tangent[2] = mesh->mTangents[i].z;
 
             // bitangent
-            vector[0] = mesh->mBitangents[i].x;
-            vector[1] = mesh->mBitangents[i].y;
-            vector[2] = mesh->mBitangents[i].z;
-            vertex.BigTangent[0] = vector[0];
-            vertex.BigTangent[1] = vector[1];
-            vertex.BigTangent[2] = vector[2];
-
+            vertex.BigTangent[0] = mesh->mBitangents[i].x;
+            vertex.BigTangent[1] = mesh->mBitangents[i].y;
+            vertex.BigTangent[2] = mesh->mBitangents[i].z;
         }
         else {
             vertex.TexCoords[0] = 0.0f;
@@ -229,6 +233,7 @@ struct Mesh *process_mesh(struct Model *pModel, struct aiMesh *mesh, const struc
     // return a mesh object created from the extracted mesh data
     struct Mesh *pNewMesh = malloc(sizeof (struct Mesh));
     if (pNewMesh == NULL) {
+
         return NULL;
     }
     init_mesh(pNewMesh, (struct Vertex *) vecVertices.data, vecVertices.length,
@@ -237,8 +242,15 @@ struct Mesh *process_mesh(struct Model *pModel, struct aiMesh *mesh, const struc
     return pNewMesh;
 }
 
-// checks all material textures of a given type and loads the textures if they're not loaded yet.
-// the required info is returned as a Texture struct.
+/**
+ * checks all material textures of a given type and loads the textures if they're not loaded yet.
+ * the required info is returned as a Texture struct.
+ * @param pModel
+ * @param mat
+ * @param type
+ * @param typeName
+ * @return
+ */
 struct Vector *load_material_textures(struct Model *pModel,
         struct aiMaterial *mat, enum aiTextureType type, const char* typeName)
 {
@@ -308,8 +320,8 @@ int model_texture_loaded_push_back(struct Model *pModel, struct Texture *pTextur
         LOGE("Realloc error.");
         return GE_ERROR_MALLOC_FAILED;
     }
+    struct Texture *pNewTexture = pModel->pTextureLoaded + (pModel->iTextureLoadedLength);
     pModel->iTextureLoadedLength++;
-    struct Texture *pNewTexture = pModel->pTextureLoaded + pModel->iTextureLoadedLength;
     texture_set_type(pNewTexture, pTexture->type);
     texture_set_path(pNewTexture, pTexture->path);
     pNewTexture->id = pTexture->id;
@@ -320,6 +332,7 @@ int model_texture_loaded_push_back(struct Model *pModel, struct Texture *pTextur
 int model_mesh_push_back(struct Model *pModel, struct Mesh *pMesh)
 {
     if (pModel == NULL || pMesh == NULL) {
+        LOGE("Model mesh push back param error.");
         return GE_ERROR_INVALID_POINTER;
     }
 
@@ -330,8 +343,8 @@ int model_mesh_push_back(struct Model *pModel, struct Mesh *pMesh)
         LOGE("Realloc error.");
         return GE_ERROR_MALLOC_FAILED;
     }
+    struct Mesh *pNewMesh = pModel->pMeshes + (pModel->iMeshLength);
     pModel->iMeshLength++;
-    struct Mesh *pNewMesh = pModel->pMeshes + pModel->iMeshLength;
     // copy old mesh data memory to new mesh
     copy_mesh(pNewMesh, pMesh);
 
@@ -340,53 +353,66 @@ int model_mesh_push_back(struct Model *pModel, struct Mesh *pMesh)
 
 /**
  * Load texture from file.
- * @param path
- * @param directory
- * @param gamma
- * @return
+ * @param path - file name
+ * @param directory - reserve, unused
+ * @param gamma - false, unused
+ * @return - unsigned int, texture id
  */
 unsigned int texture_from_file(const char *path, const char *directory, bool gamma)
 {
-    /*
-    string filename = string(path);
-    filename = directory + '/' + filename;
-
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
-    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+    AAssetManager *pManager = getLocalAAssetManager();
+    AAsset *pathAsset = AAssetManager_open(pManager, path, AASSET_MODE_UNKNOWN);
+    off_t assetLength = AAsset_getLength(pathAsset);
+    unsigned char *fileData = (unsigned char *) AAsset_getBuffer(pathAsset);
+    unsigned char *data = stbi_load_from_memory(
+        fileData, assetLength, &width, &height, &nrComponents, 0);
+    AAsset_close(pathAsset);
+    LOGD("path %s width: %d, height: %d, channel %d\n", path, width, height, nrComponents);
+
     if (data)
     {
-    GLenum format;
-    if (nrComponents == 1)
-    format = GL_RED;
-    else if (nrComponents == 3)
-    format = GL_RGB;
-    else if (nrComponents == 4)
-    format = GL_RGBA;
+        GLenum format = 0;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
 
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format,
+                     width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    stbi_image_free(data);
+        stbi_image_free(data);
     }
     else
     {
-    std::cout << "Texture failed to load at path: " << path << std::endl;
-    stbi_image_free(data);
+        LOGE("Failed to load texture: %s", path);
+        stbi_image_free(data);
     }
-    */
-    return 0;
+    return textureID;
 }
 
 int draw_model(struct Model *pModel, unsigned int shader)
 {
+    if (pModel == NULL) {
+        return GE_ERROR_INVALID_POINTER;
+    }
+
+    for (int i = 0; i < pModel->iMeshLength; ++i) {
+        int offset = i * sizeof(struct Mesh);
+        draw_mesh(pModel->pMeshes + offset, shader);
+    }
+
     return 0;
 }
