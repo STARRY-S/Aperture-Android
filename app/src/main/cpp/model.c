@@ -61,6 +61,8 @@ int load_model(struct Model *pModel, const char *path, const char *format)
     off_t assetLength = AAsset_getLength(pathAsset);
     const char *fileData = (const char *) AAsset_getBuffer(pathAsset);
 
+    // just read obj file from memory, don't load texture and mtl file
+    // TODO: load texture file and mtl file
     const struct aiScene* scene = aiImportFileFromMemory(
             fileData, assetLength,
             aiProcess_Triangulate | aiProcess_GenSmoothNormals
@@ -68,18 +70,23 @@ int load_model(struct Model *pModel, const char *path, const char *format)
     // If the import failed, report it
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        // TODO: DoTheErrorLogging( aiGetErrorString());
-        LOGE("Assimp import failed.");
+        LOGE("Assimp import failed: \n%s", aiGetErrorString());
         return GE_ERROR_ASSIMP_IMPORT_FAILED;
     }
 
     // Now we can access the file's contents
-    // TODO: Do the process scene things..
     process_node(pModel, scene->mRootNode, scene);
 
     // We're done. Release all resources associated with this import
-    // TODO: Fix release crash - seems it is fixed now (maybe not)
-    // aiReleaseImport(scene);
+    aiReleaseImport(scene);
+
+    // Test:
+    // for (int i = 0; i < pModel->iMeshLength; ++i) {
+    //     struct Mesh *ppMesh = &pModel->pMeshes[i];
+    //     LOGD("Mesh[%d] iVerticesLength = %d", i, ppMesh->iVerticesLength);
+    //     LOGD("Mesh[%d] iIndicesLength  = %d", i, ppMesh->iIndicesLength);
+    //     LOGD("Mesh[%d] iTextureLength  = %d\n", i, ppMesh->iTextureLength);
+    // }
 
     return GE_ERROR_SUCCESS;
 }
@@ -93,17 +100,19 @@ int process_node(struct Model *pModel, struct aiNode *node, const struct aiScene
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         // the node object only contains indices to index the actual objects in the scene.
-        // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
+        // the scene contains all the data, node is just to keep stuff organized
+        // (like relations between nodes).
         struct aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        // meshes.push_back(processMesh(mesh, scene));
         struct Mesh *pNewMesh = process_mesh(pModel, mesh, scene);
         model_mesh_push_back(pModel, pNewMesh);
-        // TODO: free mesh
         free_mesh(pNewMesh);
-        pNewMesh = NULL;
+        // FIXME: Unable to free pNewMesh memory
+        // free(pNewMesh);
+        // pNewMesh = NULL;
     }
 
-    // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
+    // after we've processed all of the meshes (if any)
+    // we then recursively process each of the children nodes
     for(unsigned int i = 0; i < node->mNumChildren; i++)
     {
         process_node(pModel, node->mChildren[i], scene);
@@ -133,30 +142,24 @@ struct Mesh *process_mesh(struct Model *pModel, struct aiMesh *mesh, const struc
     init_vector(&vecIndices, GE_VECTOR_UINT);
     init_vector(&vecTextures, GE_VECTOR_TEXTURE);
 
-//    vector<Vertex> vertices;
-//    vector<unsigned int> indices;
-//    vector<Texture> textures;
-
     // walk through each of the mesh's vertices
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
         struct Vertex vertex;
-        vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
         // positions
         vertex.Position[0] = mesh->mVertices[i].x;
         vertex.Position[1] = mesh->mVertices[i].y;
         vertex.Position[2] = mesh->mVertices[i].z;
 
         // normals
-        if (mesh->mNormals != NULL)
-        {
+        if (mesh->mNormals != NULL) {
             vertex.Normal[0] = mesh->mNormals[i].x;
             vertex.Normal[1] = mesh->mNormals[i].y;
             vertex.Normal[2] = mesh->mNormals[i].z;
         }
         // texture coordinates
-        if(mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
-        {
+        // does the mesh contain texture coordinates?
+        if(mesh->mTextureCoords[0]) {
             // a vertex can contain up to 8 different texture coordinates.
             // We thus make the assumption that we won't
             // use models where a vertex can have multiple texture coordinates
@@ -169,12 +172,11 @@ struct Mesh *process_mesh(struct Model *pModel, struct aiMesh *mesh, const struc
             vertex.Tangent[1] = mesh->mTangents[i].y;
             vertex.Tangent[2] = mesh->mTangents[i].z;
 
-            // bitangent
+            // big tangent
             vertex.BigTangent[0] = mesh->mBitangents[i].x;
             vertex.BigTangent[1] = mesh->mBitangents[i].y;
             vertex.BigTangent[2] = mesh->mBitangents[i].z;
-        }
-        else {
+        } else {
             vertex.TexCoords[0] = 0.0f;
             vertex.TexCoords[1] = 0.0f;
         }
@@ -203,42 +205,59 @@ struct Mesh *process_mesh(struct Model *pModel, struct aiMesh *mesh, const struc
     // normal: texture_normalN
 
     // 1. diffuse maps
-    struct Vector *pVecDiffuseMaps;
+    struct Vector *pVecDiffuseMaps = NULL;
     size_t size = sizeof(struct Texture);
     pVecDiffuseMaps = load_material_textures(
-            pModel, material, aiTextureType_DIFFUSE, "texture_diffuse");
+            pModel, material, aiTextureType_DIFFUSE, "texture_diffuse"
+    );
     vector_insert_back(&vecTextures, pVecDiffuseMaps->data, size * pVecDiffuseMaps->length);
+    free_vector(pVecDiffuseMaps);
+    free(pVecDiffuseMaps);
+    pVecDiffuseMaps = NULL;
 
     // 2. specular maps
-    struct Vector *pVecSpecularMaps;
+    struct Vector *pVecSpecularMaps = NULL;
     pVecSpecularMaps = load_material_textures(
             pModel, material, aiTextureType_SPECULAR, "texture_specular"
-            );
+    );
     vector_insert_back(&vecTextures, pVecSpecularMaps->data, size * pVecSpecularMaps->length);
+    free_vector(pVecSpecularMaps);
+    free(pVecSpecularMaps);
+    pVecSpecularMaps = NULL;
 
     // 3. normal maps
-    struct Vector *pVecNormalMaps;
+    struct Vector *pVecNormalMaps = NULL;
     pVecNormalMaps = load_material_textures(
             pModel, material, aiTextureType_HEIGHT, "texture_normal"
-            );
+    );
     vector_insert_back(&vecTextures, pVecNormalMaps->data, size * pVecNormalMaps->length);
+    free_vector(pVecNormalMaps);
+    free(pVecNormalMaps);
+    pVecNormalMaps = NULL;
 
     // 4. height maps
     struct Vector *pVecHeightMaps;
     pVecHeightMaps = load_material_textures(
             pModel, material, aiTextureType_AMBIENT, "texture_height"
-        );
+    );
     vector_insert_back(&vecTextures, pVecHeightMaps->data, size * pVecHeightMaps->length);
+    free_vector(pVecHeightMaps);
+    free(pVecHeightMaps);
+    pVecHeightMaps = NULL;
 
     // return a mesh object created from the extracted mesh data
     struct Mesh *pNewMesh = malloc(sizeof (struct Mesh));
     if (pNewMesh == NULL) {
-
+        LOGE("Malloc error.");
         return NULL;
     }
     init_mesh(pNewMesh, (struct Vertex *) vecVertices.data, vecVertices.length,
               (unsigned int *) vecIndices.data, vecIndices.length,
               (struct Texture *) vecTextures.data, vecTextures.length);
+    free_vector(&vecVertices);
+    free_vector(&vecIndices);
+    free_vector(&vecTextures);
+
     return pNewMesh;
 }
 
@@ -249,20 +268,20 @@ struct Mesh *process_mesh(struct Model *pModel, struct aiMesh *mesh, const struc
  * @param mat
  * @param type
  * @param typeName
- * @return
+ * @return a vector stores material textures, by malloc, need free
  */
-struct Vector *load_material_textures(struct Model *pModel,
-        struct aiMaterial *mat, enum aiTextureType type, const char* typeName)
+struct Vector *load_material_textures(struct Model *pModel, struct aiMaterial *mat,
+        enum aiTextureType type, const char* typeName)
 {
     struct Vector *pVecTextures = malloc(sizeof(struct Vector));
     if (pVecTextures == NULL) {
+        LOGE("Malloc error.");
         return NULL;
     }
 
     init_vector(pVecTextures, GE_VECTOR_TEXTURE);
-    // vector<Texture> textures;
-    // for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-    for(unsigned int i = 0; i < aiGetMaterialTextureCount(mat, type); i++)
+    unsigned int uMaterialTextureCount = aiGetMaterialTextureCount(mat, type);
+    for(unsigned int i = 0; i < uMaterialTextureCount; i++)
     {
         struct aiString str;
         // mat->GetTexture(type, i, &str);
@@ -304,6 +323,12 @@ struct Vector *load_material_textures(struct Model *pModel,
     return pVecTextures;
 }
 
+/**
+ * Push a new texture struct object into model
+ * @param pModel
+ * @param pTexture
+ * @return GE_Types
+ */
 int model_texture_loaded_push_back(struct Model *pModel, struct Texture *pTexture)
 {
     if (pModel == NULL || pTexture == NULL) {
@@ -329,6 +354,12 @@ int model_texture_loaded_push_back(struct Model *pModel, struct Texture *pTextur
     return 0;
 }
 
+/**
+ * Push a new mesh struct object to model
+ * @param pModel
+ * @param pMesh
+ * @return GE_Types
+ */
 int model_mesh_push_back(struct Model *pModel, struct Mesh *pMesh)
 {
     if (pModel == NULL || pMesh == NULL) {
@@ -343,7 +374,7 @@ int model_mesh_push_back(struct Model *pModel, struct Mesh *pMesh)
         LOGE("Realloc error.");
         return GE_ERROR_MALLOC_FAILED;
     }
-    struct Mesh *pNewMesh = pModel->pMeshes + (pModel->iMeshLength);
+    struct Mesh *pNewMesh = &pModel->pMeshes[pModel->iMeshLength];
     pModel->iMeshLength++;
     // copy old mesh data memory to new mesh
     copy_mesh(pNewMesh, pMesh);
@@ -360,6 +391,7 @@ int model_mesh_push_back(struct Model *pModel, struct Mesh *pMesh)
  */
 unsigned int texture_from_file(const char *path, const char *directory, bool gamma)
 {
+    // TODO: Need unit test
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
@@ -373,8 +405,7 @@ unsigned int texture_from_file(const char *path, const char *directory, bool gam
     AAsset_close(pathAsset);
     LOGD("path %s width: %d, height: %d, channel %d\n", path, width, height, nrComponents);
 
-    if (data)
-    {
+    if (data) {
         GLenum format = 0;
         if (nrComponents == 1)
             format = GL_RED;
@@ -394,9 +425,7 @@ unsigned int texture_from_file(const char *path, const char *directory, bool gam
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(data);
-    }
-    else
-    {
+    } else {
         LOGE("Failed to load texture: %s", path);
         stbi_image_free(data);
     }
@@ -410,8 +439,7 @@ int draw_model(struct Model *pModel, unsigned int shader)
     }
 
     for (int i = 0; i < pModel->iMeshLength; ++i) {
-        int offset = i * sizeof(struct Mesh);
-        draw_mesh(pModel->pMeshes + offset, shader);
+        draw_mesh(&pModel->pMeshes[i], shader);
     }
 
     return 0;

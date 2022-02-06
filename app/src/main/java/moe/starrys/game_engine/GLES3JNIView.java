@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package moe.starrys.gameengine;
+package moe.starrys.game_engine;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
 
 import javax.microedition.khronos.egl.EGLConfig;

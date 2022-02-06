@@ -8,30 +8,28 @@
 #include "renderer.h"
 
 JNIEXPORT void JNICALL
-Java_moe_starrys_gameengine_GLES3JNILib_init(
-        JNIEnv *env, jclass clazz, jint width, jint height) {
+Java_moe_starrys_game_1engine_GLES3JNILib_init(JNIEnv *env, jclass clazz, jint width, jint height) {
     // TODO: implement init()
     setup(width, height);
 }
 
 JNIEXPORT void JNICALL
-Java_moe_starrys_gameengine_GLES3JNILib_step(
-        JNIEnv *env, jclass clazz) {
+Java_moe_starrys_game_1engine_GLES3JNILib_step(JNIEnv *env, jclass clazz) {
     // TODO: implement step()
     render();
 }
 
 JNIEXPORT void JNICALL
-Java_moe_starrys_gameengine_GLES3JNILib_setNativeAssetManager(
-        JNIEnv *env, jclass clazz, jobject asset_manager) {
+Java_moe_starrys_game_1engine_GLES3JNILib_setNativeAssetManager(JNIEnv *env, jclass clazz,
+                                                                jobject asset_manager) {
     // TODO: implement setNativeAssetManager()
     AAssetManager *manager = AAssetManager_fromJava(env, asset_manager);
     setAAssetManager(manager);
 }
 
 JNIEXPORT void JNICALL
-Java_moe_starrys_gameengine_GLES3JNILib_updateBufferSize(JNIEnv *env, jclass clazz, jint width,
-                                                         jint height) {
+Java_moe_starrys_game_1engine_GLES3JNILib_updateBufferSize(JNIEnv *env, jclass clazz, jint width,
+                                                           jint height) {
     // TODO: implement updateBufferSize()
     resizeBuffer(width, height);
 }

@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "mesh.h"
+#include "cvector.h"
 
 // Model struct object definition
 struct Model {
@@ -10,6 +11,9 @@ struct Model {
     int iTextureLoadedLength;
     struct Mesh *pMeshes;
     int iMeshLength;
+
+//    struct Vector *pVecTextureLoaded;
+//    struct Vector *pVecMeshes;
 
     char *pDirectory;   // malloc, need free
 };

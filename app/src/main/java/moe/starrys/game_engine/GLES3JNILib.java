@@ -1,4 +1,4 @@
-package moe.starrys.gameengine;
+package moe.starrys.game_engine;
 
 // Wrapper for native library
 

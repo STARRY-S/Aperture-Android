@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
 
-    <moe.starrys.gameengine.GLES3JNIView
+    <moe.starrys.game_engine.GLES3JNIView
         android:id="@+id/GLES3JNIView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

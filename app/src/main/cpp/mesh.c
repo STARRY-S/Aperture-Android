@@ -179,18 +179,27 @@ int setup_mesh(struct Mesh *pMesh)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, pMesh->iIndicesLength * sizeof(unsigned int),
                  pMesh->pIndices, GL_STATIC_DRAW);
 
-    // 顶点位置
+    // 顶点位置 (position)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
                           sizeof(struct Vertex), (void*)0);
-    // 顶点法线
+    // 顶点法线 (normal)
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,
                           sizeof(struct Vertex), (void*)offsetof(struct Vertex, Normal));
-    // 顶点纹理坐标
+    // 顶点纹理坐标 (tex coords)
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
                           sizeof(struct Vertex), (void*)offsetof(struct Vertex, TexCoords));
+
+//    // vertex tangent
+//    glEnableVertexAttribArray(3);
+//    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE,
+//                      sizeof(struct Vertex), (void*)offsetof(struct Vertex, Tangent));
+//    // vertex big tangent
+//    glEnableVertexAttribArray(4);
+//    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE,
+//                      sizeof(struct Vertex), (void*)offsetof(struct Vertex, BigTangent));
 
     glBindVertexArray(0);
     return 0;
@@ -230,8 +239,11 @@ bool is_valid_mesh(struct Mesh *pMesh)
  */
 int draw_mesh(struct Mesh *pMesh, unsigned int shader)
 {
-    if (!is_valid_mesh(pMesh)) {
-        return GE_ERROR_MESH_UNINITIALIZED;
+//    if (!is_valid_mesh(pMesh)) {
+//        return GE_ERROR_MESH_UNINITIALIZED;
+//    }
+    if (pMesh == NULL) {
+        return GE_ERROR_INVALID_POINTER;
     }
 
     // bind appropriate texture
@@ -243,7 +255,7 @@ int draw_mesh(struct Mesh *pMesh, unsigned int shader)
     {
         glActiveTexture(GL_TEXTURE0 + i); // active proper texture before binding
         // retrieve texture number
-        char sNumber[32];
+        char sNumber[32] = { 0 };
         const char *spName = pMesh->pTextures[i].type;
         if (strcmp(spName, "texture_diffuse") == 0)
             sprintf(sNumber, "%u", diffuseNr++);
@@ -257,7 +269,8 @@ int draw_mesh(struct Mesh *pMesh, unsigned int shader)
         char buffer[128];
         sprintf(buffer, "%s%s", spName, sNumber);
         // now set the sampler to the correct texture unit
-        glUniform1i(glGetUniformLocation(shader, buffer), i);
+        GLint iLocation = glGetUniformLocation(shader, buffer);
+        glUniform1i(iLocation, i);
         // and finally bind the texture
         glBindTexture(GL_TEXTURE_2D, pMesh->pTextures[i].id);
     }

@@ -8,7 +8,7 @@
 #include "mesh.h"
 
 #define MODEL_FILE_NAME "backpack/backpack.obj"
-#define MODEL_FILE_FORMAT ".obj"
+#define MODEL_FILE_FORMAT "obj"
 
 void mouse_callback(double xpos, double ypos);
 
@@ -130,7 +130,6 @@ int setup(int width, int height)
     glUseProgram(floorShader);
     shaderSetInt(floorShader, "texture0", 0);
     glActiveTexture(GL_TEXTURE0);
-
 */
 
     glEnable(GL_DEPTH_TEST);
@@ -139,8 +138,9 @@ int setup(int width, int height)
 
 int render()
 {
+    static float current_frame = 0.0f;
     // render
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /*
@@ -269,9 +269,14 @@ int render()
 //    glm_translate(rockModel, rockPosition);
     vec3 model_position = {0.0f, 0.0f, 0.0f};
     glm_translate(mat_model, model_position); // translate it down so it's at the center of the scene
-    vec3 model_scale = {1.0f, 1.0f, 1.0f};
+    vec3 model_scale = {0.5f, 0.5f, 0.5f};
     glm_scale(mat_model, model_scale);  // it's a bit too big for our scene, so scale it down
+    // rotate cube by time.
+    vec4 axis = {0.0f, 1.0f, 0.0f};
+    glm_rotate(mat_model,
+        glm_rad((float)current_frame * 50 + 20), axis);
     shaderSetMat4(ourShader, "model", mat_model);
+    current_frame += 0.05f;
 
     // ourModel.Draw(ourShader);
     draw_model(&model, ourShader);
