@@ -1,11 +1,12 @@
 OpenGL Demo Android
 =====
 
-Based on OpenGL ES, [cglm](https://github.com/recp/cglm), [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h).
+Based on OpenGL ES, [cglm](https://github.com/recp/cglm), [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)
+and [Assimp](https://github.com/assimp/assimp).
 
-> Still developing, and might contain bugs.
+> Still developing, and the main branch is currently not stable, might contain bugs.
 
-The world and texture is from <https://github.com/STARRY-S/OpenGL-Demo>.
+Model: [backpack](https://sketchfab.com/3d-models/survival-guitar-backpack-low-poly-799f8c4511f84fab8c3f12887f7e6b36)
 
 Things To Do
 ----
@@ -20,7 +21,7 @@ Things To Do
 Screenshot
 ----
 
-![](images/screenshot.png)
+![](images/screenshot-obj-import.png)
 
 Usage / Development
 ----
