@@ -1,11 +1,15 @@
+#include <GLES3/gl3.h>
+#include <android/asset_manager.h>
+#include <assimp/cfileio.h>
+
 #include "renderer.h"
 #include "main.h"
 #include "camera.h"
 #include "shader.h"
 #include "texture.h"
-#include <GLES3/gl3.h>
 #include "model.h"
 #include "mesh.h"
+#include "custom_io.h"
 
 #define MODEL_FILE_NAME "backpack/backpack.obj"
 #define MODEL_FILE_FORMAT "obj"
@@ -38,6 +42,7 @@ bool firstMouse = true;
 GLuint ourShader = 0;
 struct Model model;
 
+
 int setup(int width, int height)
 {
     SCREEN_WIDTH = width;
@@ -45,12 +50,13 @@ int setup(int width, int height)
     virtual_xpos = SCREEN_WIDTH;    // for test
     glViewport(0, 0, width, height);
 
-    ourShader =
-        load_program("glsl/model_loading.vs.glsl",
+    // compile shader
+    ourShader = load_program("glsl/model_loading.vs.glsl",
                      "glsl/model_loading.fs.glsl");
 
-    // TODO: set model path name
-    init_model(&model, MODEL_FILE_NAME, MODEL_FILE_FORMAT, false);
+    // init model
+    GE_errorno = init_model(&model, MODEL_FILE_NAME, MODEL_FILE_FORMAT, false);
+    GE_CHECK(GE_errorno);
 
     // camera
     camera = initCamera();
@@ -142,7 +148,6 @@ int render()
     // render
     glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     /*
     // hikari
     glUseProgram(cubeShader);
@@ -275,11 +280,12 @@ int render()
     vec4 axis = {0.0f, 1.0f, 0.0f};
     glm_rotate(mat_model,
         glm_rad((float)current_frame * 50 + 20), axis);
-    shaderSetMat4(ourShader, "model", mat_model);
-    current_frame += 0.05f;
+    shaderSetMat4(ourShader, "model", (float *) mat_model);
+    current_frame += 0.01f;
 
     // ourModel.Draw(ourShader);
-    draw_model(&model, ourShader);
+    GE_errorno = draw_model(&model, ourShader);
+    GE_CHECK(GE_errorno);
 
     // unbind
     glBindVertexArray(0);

@@ -1,6 +1,7 @@
 #include <GLES3/gl3.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#include <assimp/cfileio.h>
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -21,14 +22,10 @@ void processInput(GLFWwindow *window);
 const GLFWvidmode* mode;
 #endif
 
+// Global error number
+int GE_errorno = 0;
+
 static AAssetManager *pLocalAAsetManager = NULL;
-
-//float deltaTime = 0.0f; // 当前帧与上一帧的时间差
-//float lastFrame = 0.0f; // 上一帧的时间
-
-//float lastX = 400, lastY = 300;
-//bool firstMouse = true;
-//bool fullScreenMode = false;
 
 void *getLocalAAssetManager()
 {
@@ -39,6 +36,8 @@ int setAAssetManager(void *pVoid)
 {
     if (!pVoid) {
         LOGE("setAAssetManager ERROR: NULL");
+        pLocalAAsetManager = NULL;
+        return GE_ERROR_INVALID_POINTER;
     }
 
     struct AAssetManager *pManager = (struct AAssetManager*) pVoid;
@@ -50,6 +49,8 @@ int setAAssetManager(void *pVoid)
     }
     return 0;
 }
+
+
 
 #ifndef __ANDROID__
 void key_callback(GLFWwindow *window, int key, int s, int action, int mods)

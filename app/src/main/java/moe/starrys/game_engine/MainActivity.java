@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        hideSystemBars();
+//        hideSystemBars();
         mView = new GLES3JNIView(getApplication());
         setContentView(mView);
         GLES3JNILib.setNativeAssetManager(getAssets());

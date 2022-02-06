@@ -7,7 +7,7 @@ struct Camera* initCamera()
     // vec3 cameraPos = { 0.0f, 0.0f, 3.0f };
     Camera.position[0] = 0.0f;
     Camera.position[1] = 0.0f;
-    Camera.position[2] = 8.0f;
+    Camera.position[2] = 6.0f;
 
     // vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
     Camera.front[0] = 0.0f;

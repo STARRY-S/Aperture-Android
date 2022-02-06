@@ -1,6 +1,7 @@
 #include "main.h"
 #include "model.h"
 #include "cvector.h"
+#include "custom_io.h"
 
 #ifdef __ANDROID__
 #include <android/asset_manager.h>
@@ -12,6 +13,7 @@
 #include <assimp/postprocess.h>    // Post processing flags
 #include <GLES3/gl3.h>
 #include <stb_image.h>
+#include <assimp/cfileio.h>
 
 int load_model(struct Model *pModel, const char *path, const char *format);
 int process_node(struct Model *pModel, struct aiNode *node, const struct aiScene *scene);
@@ -36,6 +38,19 @@ int init_model(struct Model *pModel, const char *path, const char *format, bool 
         return GE_ERROR_INVALID_POINTER;
     }
 
+    int iDirCharLocation = 0;
+    for (int i = 0; i < strlen(path); ++i) {
+        if (path[i] == '/') {
+            iDirCharLocation = i;
+        }
+    }
+    if (iDirCharLocation >= 0) {
+        char *pDirPath = malloc(sizeof(char) * (iDirCharLocation + 2));
+        memcpy(pDirPath, path, (iDirCharLocation + 1) * sizeof(char));
+        pDirPath[iDirCharLocation + 1] = '\0';
+        pModel->pDirectory = pDirPath;
+    }
+
     return load_model(pModel, path, format);
 }
 
@@ -56,17 +71,24 @@ int load_model(struct Model *pModel, const char *path, const char *format)
     // Start the import on the given file with some example postprocessing
     // Usually - if speed is not the most important aspect for you - you'll t
     // probably to request more postprocessing than we do in this example.
-    AAssetManager *pManager = getLocalAAssetManager();
-    AAsset *pathAsset = AAssetManager_open(pManager, path, AASSET_MODE_UNKNOWN);
-    off_t assetLength = AAsset_getLength(pathAsset);
-    const char *fileData = (const char *) AAsset_getBuffer(pathAsset);
+
+    // custom file io for assimp
+    struct aiFileIO fileIo;
+    fileIo.CloseProc = customFileCloseProc;
+    fileIo.OpenProc = customFileOpenProc;
+    fileIo.UserData = NULL;
+
+//    AAssetManager *pManager = getLocalAAssetManager();
+//    AAsset *pathAsset = AAssetManager_open(pManager, path, AASSET_MODE_UNKNOWN);
+//    off_t assetLength = AAsset_getLength(pathAsset);
+//    const char *fileData = (const char *) AAsset_getBuffer(pathAsset);
 
     // just read obj file from memory, don't load texture and mtl file
     // TODO: load texture file and mtl file
-    const struct aiScene* scene = aiImportFileFromMemory(
-            fileData, assetLength,
+    const struct aiScene* scene = aiImportFileEx(
+            path,
             aiProcess_Triangulate | aiProcess_GenSmoothNormals
-            | aiProcess_FlipUVs | aiProcess_CalcTangentSpace, format);
+            | aiProcess_FlipUVs | aiProcess_CalcTangentSpace, &fileIo);
     // If the import failed, report it
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -280,6 +302,7 @@ struct Vector *load_material_textures(struct Model *pModel, struct aiMaterial *m
     }
 
     init_vector(pVecTextures, GE_VECTOR_TEXTURE);
+    static int test = 0;
     unsigned int uMaterialTextureCount = aiGetMaterialTextureCount(mat, type);
     for(unsigned int i = 0; i < uMaterialTextureCount; i++)
     {
@@ -305,6 +328,7 @@ struct Vector *load_material_textures(struct Model *pModel, struct aiMaterial *m
         {
             // if texture hasn't been loaded already, load it
             struct Texture texture;
+            memset(&texture, 0, sizeof(texture));
             texture.id = texture_from_file(str.data, pModel->pDirectory, false);
 
             texture_set_path(&texture, str.data);
@@ -334,9 +358,10 @@ int model_texture_loaded_push_back(struct Model *pModel, struct Texture *pTextur
     if (pModel == NULL || pTexture == NULL) {
         return GE_ERROR_INVALID_POINTER;
     }
-    if (pModel->pTextureLoaded == NULL) {
-        return GE_ERROR_INVALID_POINTER;
-    }
+    // BUG!!!
+//    if (pModel->pTextureLoaded == NULL) {
+//        return GE_ERROR_INVALID_POINTER;
+//    }
 
     // add a new texture struct object into model
     pModel->pTextureLoaded = realloc(pModel->pTextureLoaded,
@@ -384,10 +409,10 @@ int model_mesh_push_back(struct Model *pModel, struct Mesh *pMesh)
 
 /**
  * Load texture from file.
- * @param path - file name
- * @param directory - reserve, unused
- * @param gamma - false, unused
- * @return - unsigned int, texture id
+ * @param path file name
+ * @param directory Directory of file
+ * @param gamma false, unused, reserve
+ * @return unsigned int, texture id
  */
 unsigned int texture_from_file(const char *path, const char *directory, bool gamma)
 {
@@ -396,8 +421,19 @@ unsigned int texture_from_file(const char *path, const char *directory, bool gam
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
+    unsigned int iBufferLength = strlen(path) + strlen(directory) + 1;
+    char *pPathBuff = malloc(sizeof(char) * iBufferLength);
+    sprintf(pPathBuff, "%s%s", directory, path);
     AAssetManager *pManager = getLocalAAssetManager();
-    AAsset *pathAsset = AAssetManager_open(pManager, path, AASSET_MODE_UNKNOWN);
+    AAsset *pathAsset = AAssetManager_open(pManager, pPathBuff, AASSET_MODE_UNKNOWN);
+    if (pathAsset == NULL) {
+        GE_errorno = GE_ERROR_ASSET_OPEN_FAILED;
+        LOGE("Failed to load texture from file: %s", pPathBuff);
+        free(pPathBuff);
+        pPathBuff = NULL;
+    }
+    free(pPathBuff);
+    pPathBuff = NULL;
     off_t assetLength = AAsset_getLength(pathAsset);
     unsigned char *fileData = (unsigned char *) AAsset_getBuffer(pathAsset);
     unsigned char *data = stbi_load_from_memory(

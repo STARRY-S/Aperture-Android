@@ -3,7 +3,7 @@
 #include "mesh.h"
 #include "model.h"
 
-#define DEFAULT_INIT_CAPACITY 128
+#define DEFAULT_INIT_CAPACITY 8
 
 int get_vector_data_type_size(struct Vector *pVector)
 {
@@ -50,7 +50,6 @@ int init_vector(struct Vector *pVector, int iVectorType)
         return GE_ERROR_INVALID_POINTER;
     }
 
-    LOGD("Start init vector: 0X%X", (unsigned int) pVector);
     pVector->type = iVectorType;
     int size = get_vector_data_type_size(pVector);
     pVector->capacity = DEFAULT_INIT_CAPACITY;
@@ -61,15 +60,19 @@ int init_vector(struct Vector *pVector, int iVectorType)
     }
     memset(pVector->data, 0, size * DEFAULT_INIT_CAPACITY);
     pVector->length = 0;
-    LOGD("Finished initialized vector.");
 
     return GE_ERROR_SUCCESS;
 }
 
+/**
+ * Release the memory allocated by vector
+ * @param pVector
+ * @return - GE_Types
+ */
 int free_vector(struct Vector *pVector)
 {
     if (pVector == NULL) {
-        return 0;
+        return GE_ERROR_INVALID_POINTER;
     }
     free(pVector->data);
     pVector->data = NULL;
@@ -98,9 +101,9 @@ bool is_valid_vector(struct Vector *pVector)
 }
 
 /**
- * Push the one data at the back of vector.
+ * Append one data to the back of the vector.
  * @param pVector
- * @param data - void* , pointer points to the data,
+ * @param data - char* , pointer points to the data,
  * @return GE_Types
  */
 int vector_push_back(struct Vector *pVector, const char* data)
@@ -115,10 +118,6 @@ int vector_push_back(struct Vector *pVector, const char* data)
     }
 
     if (pVector->length == pVector->capacity) {
-        // char *pBufferNew = malloc(size * (pVector->capacity * 2));
-        // memcpy(pBufferNew, pVector->data, size * pVector->length);
-        // free(pVector->data);
-        // pVector->data = pBufferNew;
         pVector->data = realloc(pVector->data, size * pVector->capacity * 2);
         if (pVector->data == NULL) {
             LOGE("Failed to realloc vector memory.");
@@ -126,7 +125,7 @@ int vector_push_back(struct Vector *pVector, const char* data)
         }
         pVector->capacity *= 2;
     }
-    int offset = size * (pVector->length ) / sizeof(char);
+    int offset = size * (pVector->length ) / (int) sizeof(char);
     char *pNewData = pVector->data + offset;
     memcpy(pNewData, data, size);
     pVector->length++;

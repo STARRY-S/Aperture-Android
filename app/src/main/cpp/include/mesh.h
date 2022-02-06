@@ -41,7 +41,7 @@ int init_mesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
              unsigned int *pIndices, int iIndicesLength,
              struct Texture *pTexture, int iTextureLength);
 int free_mesh(struct Mesh *pMesh);
-int copy_mesh(struct Mesh *pNewMesh, struct Mesh *pOldMesh);
+int copy_mesh(struct Mesh *pNewMesh, const struct Mesh *pOldMesh);
 int draw_mesh(struct Mesh *pMesh, unsigned int shader);
 
 int texture_set_type(struct Texture *pTexture, const char *typeName);

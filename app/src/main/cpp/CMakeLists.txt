@@ -46,6 +46,7 @@ add_library(
         mesh.c
         model.c
         cvector.c
+        custom_io.c
 )
 set_target_properties(game_engine PROPERTIES LINKER_LANGUAGE C)
 

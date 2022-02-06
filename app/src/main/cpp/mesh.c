@@ -102,22 +102,18 @@ int free_mesh(struct Mesh *pMesh)
 
 /**
  * Copy mesh
- * @param pNewMesh
- * @param pOldMesh
+ * @param pNewMesh - dest, points to an uninitialized mesh
+ * @param pOldMesh - from, the mesh to be copied
  * @return GE_Types
  */
-int copy_mesh(struct Mesh *pNewMesh, struct Mesh *pOldMesh)
+int copy_mesh(struct Mesh *pNewMesh, const struct Mesh *pOldMesh)
 {
     if (pNewMesh == NULL || pOldMesh == NULL) {
         return GE_ERROR_INVALID_POINTER;
     }
-    LOGD("Start copy mesh.");
 
-//    if (pNewMesh->pTextures != NULL) {
-//        free(pNewMesh->pTextures);
-//        pNewMesh->pTextures = NULL;
-//        LOGD("Free ed old mesh Textures.");
-//    }
+    memset(pNewMesh, 0, sizeof(struct Mesh));
+
     pNewMesh->iTextureLength = pOldMesh->iTextureLength;
     if (pOldMesh->iTextureLength > 0) {
         pNewMesh->pTextures = malloc(pNewMesh->iTextureLength * sizeof(struct Texture));
@@ -125,10 +121,6 @@ int copy_mesh(struct Mesh *pNewMesh, struct Mesh *pOldMesh)
                pNewMesh->iTextureLength * sizeof(struct Texture));
     }
 
-//    if (pNewMesh->pIndices != NULL) {
-//        free(pNewMesh->pIndices);
-//        pNewMesh->pIndices = NULL;
-//    }
     pNewMesh->iIndicesLength = pOldMesh->iIndicesLength;
     if (pOldMesh->iIndicesLength > 0) {
         pNewMesh->pIndices = malloc(pNewMesh->iIndicesLength * sizeof(unsigned int));
@@ -136,10 +128,6 @@ int copy_mesh(struct Mesh *pNewMesh, struct Mesh *pOldMesh)
                pNewMesh->iIndicesLength * sizeof(unsigned int));
     }
 
-//    if (pNewMesh->pVertices != NULL) {
-//        free(pNewMesh->pVertices);
-//        pNewMesh->pVertices = NULL;
-//    }
     pNewMesh->iVerticesLength = pOldMesh->iVerticesLength;
     if (pOldMesh->iVerticesLength > 0) {
         pNewMesh->pVertices = malloc(pNewMesh->iVerticesLength * sizeof(struct Vertex));
@@ -150,7 +138,6 @@ int copy_mesh(struct Mesh *pNewMesh, struct Mesh *pOldMesh)
     pNewMesh->VAO = pOldMesh->VAO;
     pNewMesh->VBO = pOldMesh->VBO;
     pNewMesh->EBO = pOldMesh->EBO;
-    LOGD("Finish copy mesh.");
 
     return 0;
 }
@@ -291,10 +278,11 @@ int texture_set_type(struct Texture *pTexture, const char *typeName)
         return GE_ERROR_INVALID_POINTER;
     }
 
-    if (pTexture->type != NULL) {
-        free(pTexture->type);
-        pTexture->type = NULL;
-    }
+    // May cause crash here!
+//    if (pTexture->type != NULL) {
+//        free(pTexture->type);
+//        pTexture->type = NULL;
+//    }
     pTexture->type = malloc(sizeof(char) * (strlen(typeName) + 1) );
     strcpy(pTexture->type, typeName);
     return 0;
@@ -306,10 +294,11 @@ int texture_set_path(struct Texture *pTexture, const char *pathName)
         return GE_ERROR_INVALID_POINTER;
     }
 
-    if (pTexture->path != NULL) {
-        free(pTexture->path);
-        pTexture->path = NULL;
-    }
+    // May cause crash Here!
+//    if (pTexture->path != NULL) {
+//        free(pTexture->path);
+//        pTexture->path = NULL;
+//    }
     pTexture->path = malloc(sizeof(char) * (strlen(pathName) + 1) );
     strcpy(pTexture->path, pathName);
     return 0;
