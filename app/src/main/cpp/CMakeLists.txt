@@ -45,6 +45,7 @@ add_library(
         renderer.c
         mesh.c
         model.c
+        vertex.c
         cvector.c
         custom_io.c
 )

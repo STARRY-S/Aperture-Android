@@ -7,10 +7,11 @@
 #include "mesh.h"
 #include "main.h"
 #include "shader.h"
+#include "texture.h"
+#include "vertex.h"
 
 // private method
 int setup_mesh(struct Mesh *pMesh);
-bool is_valid_mesh(struct Mesh *pMesh);
 
 /**
  * Mesh Constructor
@@ -71,11 +72,11 @@ int init_mesh(struct Mesh *pMesh, struct Vertex* pVertices, int iVerticesLength,
 }
 
 /**
- * Free mesh struct object
+ * Release data in mesh struct object
  * @param pMesh
  * @return 0 if success
  */
-int free_mesh(struct Mesh *pMesh)
+GE_Types free_mesh(struct Mesh *pMesh)
 {
     if (pMesh == NULL) {
         return 0;
@@ -84,19 +85,21 @@ int free_mesh(struct Mesh *pMesh)
         free(pMesh->pIndices);
         pMesh->pIndices = NULL;
     }
+    pMesh->iIndicesLength = 0;
 
     if (pMesh->pVertices) {
         free(pMesh->pVertices);
         pMesh->pVertices = NULL;
     }
+    pMesh->iVerticesLength = 0;
 
     if (pMesh->pTextures) {
         free(pMesh->pTextures);
         pMesh->pTextures = NULL;
     }
+    pMesh->iTextureLength = 0;
+    pMesh->VAO = pMesh->VBO = pMesh->EBO = 0;
 
-    free(pMesh);
-    pMesh = NULL;
     return 0;
 }
 
@@ -193,32 +196,6 @@ int setup_mesh(struct Mesh *pMesh)
 }
 
 /**
- * Check whether Mesh struct object is initialized or not
- * @param pMesh
- * @return true: initialized, false: not initialized
- */
-bool is_valid_mesh(struct Mesh *pMesh)
-{
-    if (pMesh == NULL) {
-        return false;
-    }
-
-    if (!pMesh->pIndices || !pMesh ->pVertices || !pMesh->pTextures)
-    {
-        return false;
-    }
-
-    if (pMesh->iIndicesLength <= 0  ||
-        pMesh->iVerticesLength <= 0 ||
-        pMesh->iTextureLength <= 0)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
  * Draw Mesh
  * @param pMesh - the pointer to the mesh
  * @param shader - shader id
@@ -226,9 +203,6 @@ bool is_valid_mesh(struct Mesh *pMesh)
  */
 int draw_mesh(struct Mesh *pMesh, unsigned int shader)
 {
-//    if (!is_valid_mesh(pMesh)) {
-//        return GE_ERROR_MESH_UNINITIALIZED;
-//    }
     if (pMesh == NULL) {
         return GE_ERROR_INVALID_POINTER;
     }
@@ -238,7 +212,7 @@ int draw_mesh(struct Mesh *pMesh, unsigned int shader)
     unsigned int specularNr = 1;
     unsigned int normalNr   = 1;
     unsigned int heightNr   = 1;
-    for(unsigned int i = 0; i < pMesh->iTextureLength; i++)
+    for(int i = 0; i < pMesh->iTextureLength; i++)
     {
         glActiveTexture(GL_TEXTURE0 + i); // active proper texture before binding
         // retrieve texture number
@@ -253,7 +227,7 @@ int draw_mesh(struct Mesh *pMesh, unsigned int shader)
         else if (strcmp(spName, "texture_height") == 0)
             sprintf(sNumber, "%u", heightNr++);
 
-        char buffer[128];
+        char buffer[32];
         sprintf(buffer, "%s%s", spName, sNumber);
         // now set the sampler to the correct texture unit
         GLint iLocation = glGetUniformLocation(shader, buffer);
@@ -270,36 +244,4 @@ int draw_mesh(struct Mesh *pMesh, unsigned int shader)
     // always good practice to set everything back to defaults once configured :)
     glActiveTexture(GL_TEXTURE0);
     return GE_ERROR_SUCCESS;
-}
-
-int texture_set_type(struct Texture *pTexture, const char *typeName)
-{
-    if (pTexture == NULL || typeName == NULL) {
-        return GE_ERROR_INVALID_POINTER;
-    }
-
-    // May cause crash here!
-//    if (pTexture->type != NULL) {
-//        free(pTexture->type);
-//        pTexture->type = NULL;
-//    }
-    pTexture->type = malloc(sizeof(char) * (strlen(typeName) + 1) );
-    strcpy(pTexture->type, typeName);
-    return 0;
-}
-
-int texture_set_path(struct Texture *pTexture, const char *pathName)
-{
-    if (pTexture == NULL || pathName == NULL) {
-        return GE_ERROR_INVALID_POINTER;
-    }
-
-    // May cause crash Here!
-//    if (pTexture->path != NULL) {
-//        free(pTexture->path);
-//        pTexture->path = NULL;
-//    }
-    pTexture->path = malloc(sizeof(char) * (strlen(pathName) + 1) );
-    strcpy(pTexture->path, pathName);
-    return 0;
 }

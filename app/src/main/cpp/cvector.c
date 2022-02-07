@@ -2,6 +2,8 @@
 #include "main.h"
 #include "mesh.h"
 #include "model.h"
+#include "texture.h"
+#include "vertex.h"
 
 #define DEFAULT_INIT_CAPACITY 8
 

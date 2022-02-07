@@ -5,7 +5,12 @@
 #include "custom_io.h"
 #include "main.h"
 
- struct aiFile* customFileOpenProc(
+#ifdef LOG_TAG
+#undef LOG_TAG
+#define LOG_TAG "GE_CUSTOM_IO"
+#endif
+
+struct aiFile* customFileOpenProc(
         C_STRUCT aiFileIO* customIO, const char* pFileName, const char* pMode)
 {
     GE_errorno = GE_ERROR_SUCCESS;
@@ -36,45 +41,45 @@
     pAiFile->FlushProc = customFileFlushProc;
     pAiFile->UserData = (char *) pathAsset;
 
-    LOGE("Successfully opened file %s", pFileName);
+    LOGD("CustomIO: Opened file %s", pFileName);
     return pAiFile;
 }
 
- void customFileCloseProc(C_STRUCT aiFileIO* pAiFileIO, C_STRUCT aiFile* pAiFile)
+void customFileCloseProc(C_STRUCT aiFileIO* pAiFileIO, C_STRUCT aiFile* pAiFile)
 {
     AAsset_close((AAsset *) pAiFile->UserData);
 }
 
- size_t customFileReadProc(C_STRUCT aiFile* pAiFile, char* pBuffer, size_t size, size_t count)
+size_t customFileReadProc(C_STRUCT aiFile* pAiFile, char* pBuffer, size_t size, size_t count)
 {
     return AAsset_read((AAsset *) pAiFile->UserData, pBuffer, size * count);
 }
 
- size_t customFileWriteProc(C_STRUCT aiFile* pAiFile,
-                                  const char* pBuffer, size_t size, size_t count)
+size_t customFileWriteProc(C_STRUCT aiFile* pAiFile,
+                          const char* pBuffer, size_t size, size_t count)
 {
     // do nothing~
     return 0;
 }
 
- size_t customFileTellProc(C_STRUCT aiFile* pAiFile)
+size_t customFileTellProc(C_STRUCT aiFile* pAiFile)
 {
     long iRemainLength = AAsset_getRemainingLength((AAsset*) pAiFile->UserData);
     long iTotalLength = AAsset_getLength((AAsset*) pAiFile->UserData);
     return iTotalLength - iRemainLength;
 }
 
- size_t customFileSizeProc(C_STRUCT aiFile* pAiFile)
+size_t customFileSizeProc(C_STRUCT aiFile* pAiFile)
 {
     return AAsset_getLength((AAsset*) pAiFile->UserData);
 }
 
- void customFileFlushProc(C_STRUCT aiFile* pAiFile)
+void customFileFlushProc(C_STRUCT aiFile* pAiFile)
 {
     // do nothing~
 }
 
- C_ENUM aiReturn customFileSeek(C_STRUCT aiFile* pAiFile, size_t offset,
+C_ENUM aiReturn customFileSeek(C_STRUCT aiFile* pAiFile, size_t offset,
                                       C_ENUM aiOrigin origin)
 {
     int iRet = AAsset_seek((AAsset *) pAiFile->UserData, (long) offset, origin);

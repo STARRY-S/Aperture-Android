@@ -46,7 +46,7 @@ typedef enum {
     GE_ERROR_LENGTH                 // never use this
 } GE_Types;
 
-static const char *GE_ERROR_NAME[] = {
+static const char *GE_ERROR_NAME[GE_ERROR_LENGTH] = {
         "SUCCESS",
         "INVALID_POINTER",
         "INVALID_PARAMETER",
@@ -60,12 +60,54 @@ static const char *GE_ERROR_NAME[] = {
         "UNKNOWN"
 };
 
-#define GE_CHECK(code) if (code > 1 && code < GE_ERROR_LENGTH) LOGE("%s", GE_ERROR_NAME[code])
+typedef enum {
+    GE_MOBILE_DEFAULT = 0,  // default mobile type
+    GE_MOBILE_GOOGLE,       // Google
+    GE_MOBILE_ZTE,          // ZTE
+    GE_MOBILE_HUAWEI,       // HUAWEI
+    GE_MOBILE_COOLPAD,      // CoolPad
+    GE_MOBILE_LENOVO,       // Lenovo
+    GE_MOBILE_REALME,       // RealMe
+    GE_MOBILE_ONEPLUS,      // OnePlus
+    GE_MOBILE_XIAOMI,       // Xiaomi
+    GE_MOBILE_BLACKSHARK,   // BlackShark
+    GE_MOBILE_OPPO,         // OPPO
+    GE_MOBILE_HTC,          // HTC
+    GE_MOBILE_SONY,         // Sony
+    GE_MOBILE_SAMSUNG,      // Samsung
+    GE_MOBILE_NOKIA,        // NOKIA
+    GE_MOBILE_X86,          // X86
+    GE_MOBILE_LENGTH,       // never use this.
+} GE_MOBILE_Types;
 
-// global error No.
+static const char *GE_MOBILE_NAME[GE_MOBILE_LENGTH] = {
+    "default",
+    "google",
+    "zte",
+    "huawei",
+    "coolpad",
+    "lenovo",
+    "realme",
+    "oneplus",
+    "xiaomi",
+    "blackshark",
+    "oppo",
+    "htc",
+    "sony",
+    "samsung",
+    "nokia",
+    "x86"
+};
+
+#define GE_CHECK(i) if (i > 1 && i < GE_ERROR_LENGTH) LOGE("%s", GE_ERROR_NAME[i])
+
+// global error number.
 extern int GE_errorno;
 
 void *getLocalAAssetManager();
 int setAAssetManager(void *pManager);
+int setMobileName(const char *pName);
+const char* getMobileName();
+int getMobileType(const char *pMobileName);
 
 #endif //GAME_ENGINE_MAIN_H

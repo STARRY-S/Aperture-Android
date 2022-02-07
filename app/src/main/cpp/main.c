@@ -22,10 +22,13 @@ void processInput(GLFWwindow *window);
 const GLFWvidmode* mode;
 #endif
 
+#define GE_DEFAULT_BUFFER_SIZE 128
+
 // Global error number
 int GE_errorno = 0;
 
 static AAssetManager *pLocalAAsetManager = NULL;
+static char sMobileName[GE_DEFAULT_BUFFER_SIZE] = { 0 };
 
 void *getLocalAAssetManager()
 {
@@ -50,7 +53,37 @@ int setAAssetManager(void *pVoid)
     return 0;
 }
 
+int setMobileName(const char *pName)
+{
+    if (pName == NULL) {
+        LOGE("setMobileName ERROR: NULL");
+        return GE_ERROR_INVALID_POINTER;
+    }
 
+    strncpy(sMobileName, pName, GE_DEFAULT_BUFFER_SIZE);
+    sMobileName[GE_DEFAULT_BUFFER_SIZE - 1] = '0';
+
+    return 0;
+}
+
+const char* getMobileName()
+{
+    return sMobileName;
+}
+
+int getMobileType(const char *pMobileName)
+{
+    if (pMobileName == NULL) {
+        LOGE("getMobileType Failed: NULL");
+        return 0;
+    }
+    for (int i = 0; i < GE_MOBILE_LENGTH; ++i) {
+        if (strstr(pMobileName, GE_MOBILE_NAME[i]) != NULL) {
+            return i;
+        }
+    }
+    return 0;
+}
 
 #ifndef __ANDROID__
 void key_callback(GLFWwindow *window, int key, int s, int action, int mods)

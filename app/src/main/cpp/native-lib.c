@@ -8,21 +8,18 @@
 #include "renderer.h"
 
 JNIEXPORT void JNICALL
-Java_moe_starrys_game_1engine_GLES3JNILib_init(JNIEnv *env, jclass clazz, jint width, jint height) {
-    // TODO: implement init()
-    setup(width, height);
+Java_moe_starrys_game_1engine_GLES3JNILib_init(JNIEnv *env, jclass clazz) {
+    setup();
 }
 
 JNIEXPORT void JNICALL
 Java_moe_starrys_game_1engine_GLES3JNILib_step(JNIEnv *env, jclass clazz) {
-    // TODO: implement step()
     render();
 }
 
 JNIEXPORT void JNICALL
 Java_moe_starrys_game_1engine_GLES3JNILib_setNativeAssetManager(JNIEnv *env, jclass clazz,
                                                                 jobject asset_manager) {
-    // TODO: implement setNativeAssetManager()
     AAssetManager *manager = AAssetManager_fromJava(env, asset_manager);
     setAAssetManager(manager);
 }
@@ -30,6 +27,14 @@ Java_moe_starrys_game_1engine_GLES3JNILib_setNativeAssetManager(JNIEnv *env, jcl
 JNIEXPORT void JNICALL
 Java_moe_starrys_game_1engine_GLES3JNILib_updateBufferSize(JNIEnv *env, jclass clazz, jint width,
                                                            jint height) {
-    // TODO: implement updateBufferSize()
     resizeBuffer(width, height);
+}
+
+JNIEXPORT jint JNICALL
+Java_moe_starrys_game_1engine_GLES3JNILib_setMobileName(
+        JNIEnv *env, jclass clazz, jstring s_name) {
+    const char *cparam = (*env)->GetStringUTFChars(env, s_name, 0);
+    setMobileName((const char*) cparam);
+    (*env)->ReleaseStringUTFChars(env, s_name, cparam);
+    return 0;
 }

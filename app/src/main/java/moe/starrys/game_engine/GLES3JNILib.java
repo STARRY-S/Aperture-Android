@@ -10,12 +10,9 @@ public class GLES3JNILib {
         System.loadLibrary("game_engine");
     }
 
-    /**
-     * @param width the current view width
-     * @param height the current view height
-     */
-    public static native void init(int width, int height);
+    public static native void init();
     public static native void step();
     public static native void setNativeAssetManager(AssetManager assetManager);
     public static native void updateBufferSize(int width, int height);
+    public static native int setMobileName(String sName);
 }

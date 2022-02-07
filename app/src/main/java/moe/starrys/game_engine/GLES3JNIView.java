@@ -36,16 +36,19 @@ public class GLES3JNIView extends GLSurfaceView {
     }
 
     private static class Renderer implements GLSurfaceView.Renderer {
+        @Override
         public void onDrawFrame(GL10 gl) {
             GLES3JNILib.step();
         }
 
+        @Override
         public void onSurfaceChanged(GL10 gl, int width, int height) {
-            GLES3JNILib.init(width, height);
+            GLES3JNILib.updateBufferSize(width, height);
         }
 
+        @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            // do nothing
+             GLES3JNILib.init();
         }
     }
 }
