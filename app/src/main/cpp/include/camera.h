@@ -1,5 +1,5 @@
-#ifndef GAMEENGINE_CAMERA_H
-#define GAMEENGINE_CAMERA_H
+#ifndef GAME_ENGINE_CAMERA_H
+#define GAME_ENGINE_CAMERA_H
 
 #include <GLES3/gl3.h>
 #include <stdio.h>
@@ -23,7 +23,7 @@ struct Camera {
     vec3 front;
     vec3 up;
     vec3 right;
-    vec3 worldup;
+    vec3 worldUp;
 
     // euler Angles
     float yaw;
@@ -36,10 +36,19 @@ struct Camera {
 
 struct Camera* initCamera();
 struct Camera* getCamera();
-void updateCameraVectors();
+
 void GetViewMatrix(mat4 *temp);
 void ProcessKeyboard(int direction, float deltaTime);
-void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch);
-void ProcessMouseScroll(float yoffset);
+void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch);
+void ProcessMouseScroll(float yOffset);
 
-#endif //GAMEENGINE_CAMERA_H
+int setCameraPosition(float x, float y, float z);
+int setCameraFront(float x, float y, float z);
+int setCameraUp(float x, float y, float z);
+int setCameraYaw(float yaw);
+int setCameraPitch(float pitch);
+int setCameraSensitivity(float sensitivity);
+int setCameraSpeed(float speed);
+int setCameraZoom(float zoom);
+
+#endif //GAME_ENGINE_CAMERA_H

@@ -15,4 +15,5 @@ public class GLES3JNILib {
     public static native void setNativeAssetManager(AssetManager assetManager);
     public static native void updateBufferSize(int width, int height);
     public static native int setMobileName(String sName);
+    public static native int cameraViewEvent(float xOffset, float yOffset, boolean constrainPitch);
 }
