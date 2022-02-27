@@ -54,6 +54,13 @@ GLuint load_texture(const char *const path, int format)
     return texture;
 }
 
+/**
+ * Load texture from file
+ * @param path file name
+ * @param directory path name
+ * @param gamma reserve
+ * @return texture id, 0 if failed
+ */
 unsigned int texture_from_file(const char *path, const char *directory, bool gamma)
 {
     unsigned int textureID;
@@ -70,6 +77,7 @@ unsigned int texture_from_file(const char *path, const char *directory, bool gam
         LOGE("Failed to load texture from file: %s", pPathBuff);
         free(pPathBuff);
         pPathBuff = NULL;
+        return 0;
     }
     free(pPathBuff);
     pPathBuff = NULL;
