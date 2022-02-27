@@ -56,5 +56,4 @@ public class MainActivity extends AppCompatActivity {
             return manufacturer.toLowerCase() + " " + model.toLowerCase();
         }
     }
-
 }

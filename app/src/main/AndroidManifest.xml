@@ -15,7 +15,7 @@
         >
         <activity
             android:name="moe.starrys.game_engine.MainActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="landscape"
             android:exported="true"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
