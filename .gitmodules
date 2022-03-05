@@ -1,0 +1,3 @@
+[submodule "app/src/main/GameEngine"]
+	path = app/src/main/GameEngine
+	url = https://github.com/STARRY-S/GameEngine.git
