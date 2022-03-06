@@ -32,7 +32,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            path file('src/main/GameEngine/CMakeLists.txt')
+            path file('GameEngine/CMakeLists.txt')
             version '3.22.2'
         }
     }
