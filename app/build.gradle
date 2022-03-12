@@ -33,7 +33,6 @@ android {
     externalNativeBuild {
         cmake {
             path file('GameEngine/CMakeLists.txt')
-            version '3.22.2'
         }
     }
     buildFeatures {
