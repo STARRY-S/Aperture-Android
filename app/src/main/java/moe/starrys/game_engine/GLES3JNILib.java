@@ -7,7 +7,7 @@ import android.content.res.AssetManager;
 public class GLES3JNILib {
 
     static {
-        System.loadLibrary("game_engine");
+        System.loadLibrary("aperture");
     }
 
     public static native void init();

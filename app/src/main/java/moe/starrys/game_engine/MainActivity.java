@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'game_engine' library on application startup.
     static {
-        System.loadLibrary("game_engine");
+        System.loadLibrary("aperture");
     }
 
     @Override

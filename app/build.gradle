@@ -32,7 +32,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            path file('GameEngine/CMakeLists.txt')
+            path file('Aperture/CMakeLists.txt')
         }
     }
     buildFeatures {
