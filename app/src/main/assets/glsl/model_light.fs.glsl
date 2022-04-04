@@ -5,56 +5,60 @@ out vec4 FragColor;
 
 struct Material {
     sampler2D diffuse;
-    sampler2D specular;    
+    sampler2D specular;
+    sampler2D normal;
     float shininess;
-}; 
+};
 
 struct Light {
     vec3 position;
 
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
 
     float constant;
     float linear;
     float quadratic;
 };
 
-in vec3 FragPos;  
-in vec3 Normal;  
+in vec3 FragPos;
+in vec3 Normal;
 in vec2 TexCoords;
-  
+
 uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
 
 void main()
 {
-    vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
-  	
-    // diffuse 
+    vec4 tex_diffuse = texture(material.diffuse, TexCoords);
+    if(tex_diffuse.a < 0.01)
+        discard;
+    vec4 ambient = light.ambient * tex_diffuse;
+
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
-    float diff = max(dot(norm, lightDir), 0.0f);
-    vec3 diffuse = 
-        light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;  
-    
-    // specular
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec4 diffuse = light.diffuse * diff * texture(material.diffuse, TexCoords);
+
     vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininess);
-    vec3 specular = 
-        light.specular * spec * texture(material.specular, TexCoords).rgb;  
-    
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec4 specular = light.specular * spec * texture(material.specular, TexCoords);
+
+    vec4 emission = texture(material.normal, TexCoords);
+
     float distance    = length(light.position - FragPos);
-    float attenuation = 1.0f / (light.constant + light.linear * distance 
-                + light.quadratic * (distance * distance));    
+    float attenuation = 1.0f / (light.constant + light.linear * distance
+                + light.quadratic * (distance * distance));
 
-    ambient  *= attenuation; 
-    diffuse  *= attenuation;
-    specular *= attenuation; 
+    attenuation = max(attenuation, 0.1);
+    ambient.xyz  *= attenuation;
+    diffuse.xyz  *= attenuation;
+    specular.xyz *= attenuation;
+    emission.xyz *= attenuation;
 
-    vec3 result = ambient + diffuse + specular;
-    FragColor = vec4(result, 1.0f);
-} 
+    vec4 result = ambient + diffuse + specular + emission;
+    FragColor = result;
+}

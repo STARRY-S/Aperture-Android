@@ -16,14 +16,14 @@ uniform mat4 projection;
 // Log arithmic Depth Buffer enabled or not
 uniform bool optDepth;
 // TODO: Calculate far automatically
-float far = 50.0f;
+float far = 100.0f;
 
 void main()
 {
     FragPos = vec3(model * vec4(aPos, 1.0));
-    Normal = mat3(transpose(inverse(model))) * aNormal;  
+    Normal = mat3(transpose(inverse(model))) * aNormal;
     TexCoords = aTexCoords;
-    
+
     gl_Position = projection * view * vec4(FragPos, 1.0);
 
     // refer: http://sirlis.cn/depth-buffer-and-z-fighting/
