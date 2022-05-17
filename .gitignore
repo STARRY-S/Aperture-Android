@@ -15,3 +15,10 @@
 local.properties
 /.vscode/
 app/release/
+
+# ignore files copied by cmake from Aperture project
+app/src/main/assets/res
+app/src/main/assets/mc
+app/src/main/assets/sound
+app/src/main/assets/glsl
+app/src/main/assets/ap_glsl
