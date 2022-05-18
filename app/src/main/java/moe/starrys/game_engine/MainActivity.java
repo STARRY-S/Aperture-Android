@@ -5,9 +5,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
+import android.annotation.SuppressLint;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,15 +20,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 public class MainActivity extends AppCompatActivity {
     static String TAG = "ACTIVITY_MAIN";
-    private FloatingActionButton btn_move_up = null;
-    private FloatingActionButton btn_move_down = null;
-    private FloatingActionButton btn_move_left = null;
-    private FloatingActionButton btn_move_right = null;
-    private FloatingActionButton btn_move_center = null;
-    private FloatingActionButton btn_move_run = null;
-    private FloatingActionButton btn_move_jump = null;
-    private FloatingActionButton btn_light = null;
 
+    private static int textureNum = 0;
     private static boolean spotLightEnabled = false;
 
     // Used to load the 'game_engine' library on application startup.
@@ -34,20 +29,18 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("aperture");
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        hideSystemBars();
-        Toast.makeText(this, "Loading...", Toast.LENGTH_SHORT).show();
-//        Snackbar.make(view, "Here's a Snackbar", Snackbar.LENGTH_LONG)
-//                .setAction("Action", null).show();
+//        Toast.makeText(this, "Loading...", Toast.LENGTH_SHORT).show();
         setContentView(R.layout.activity_main);
 
         GLES3JNILib.setNativeAssetManager(getAssets());
         GLES3JNILib.setMobileName(getDeviceName());
 
-        btn_move_up = findViewById(R.id.btn_move_up);
+        FloatingActionButton btn_move_up = findViewById(R.id.btn_move_up);
         btn_move_up.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -60,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        btn_move_down = findViewById(R.id.btn_move_down);
+        FloatingActionButton btn_move_down = findViewById(R.id.btn_move_down);
         btn_move_down.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -73,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        btn_move_left = findViewById(R.id.btn_move_left);
+        FloatingActionButton btn_move_left = findViewById(R.id.btn_move_left);
         btn_move_left.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -86,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        btn_move_right = findViewById(R.id.btn_move_right);
+        FloatingActionButton btn_move_right = findViewById(R.id.btn_move_right);
         btn_move_right.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -99,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        btn_move_center = findViewById(R.id.btn_move_center);
+        FloatingActionButton btn_move_center = findViewById(R.id.btn_move_center);
         btn_move_center.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -112,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        btn_move_run = findViewById(R.id.btm_move_run);
+        FloatingActionButton btn_move_run = findViewById(R.id.btm_move_run);
         btn_move_run.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -125,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        btn_move_jump = findViewById(R.id.btn_move_jump);
+        FloatingActionButton btn_move_jump = findViewById(R.id.btn_move_jump);
         btn_move_jump.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -138,28 +131,68 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        btn_light = findViewById(R.id.btn_light);
+        FloatingActionButton btn_light = findViewById(R.id.btn_light);
         btn_light.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 spotLightEnabled = !spotLightEnabled;
+                String msg = null;
+                if (spotLightEnabled) {
+                    msg = "Turn on the spot light.";
+                } else {
+                    msg = "Turn off the spot light.";
+                }
+                Snackbar.make(v, msg, Snackbar.LENGTH_SHORT)
+                        .setAction("Action", null).show();
                 GLES3JNILib.setSpotLightEnabled(spotLightEnabled);
+            }
+        });
+        FloatingActionButton btn_texture_change = findViewById(R.id.btn_texture_change);
+        btn_texture_change.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // only have two textures currently
+                textureNum = (textureNum > 0) ? 0 : 1;
+                Snackbar.make(v, "Set material number: " + textureNum, Snackbar.LENGTH_SHORT)
+                    .setAction("Action", null).show();
+                GLES3JNILib.changeTextureNum(textureNum);
             }
         });
     }
 
-    private void hideSystemBars() {
-        WindowInsetsControllerCompat windowInsetsController =
-                ViewCompat.getWindowInsetsController(getWindow().getDecorView());
-        if (windowInsetsController == null) {
-            return;
+    // Refer https://developer.android.com/training/system-ui/immersive#EnableFullscreen
+    private void hideSystemUI() {
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE
+                        // Set the content to appear under the system bars so that the
+                        // content doesn't resize when the system bars hide and show.
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        // Hide the nav bar and status bar
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    }
+
+    // Shows the system bars by removing all the flags
+    // except for the ones that make the content appear under the system bars.
+    private void showSystemUI() {
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            hideSystemUI();
+        } else {
+            showSystemUI();
         }
-        // Configure the behavior of the hidden system bars
-        windowInsetsController.setSystemBarsBehavior(
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
-        );
-        // Hide both the status bar and the navigation bar
-        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
     }
 
     public String getDeviceName() {

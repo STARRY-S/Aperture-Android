@@ -33,6 +33,7 @@ public class GLES3JNILib {
     public static native int creatureMove(int direction, float speed);
     public static native int creatureJump();
     public static native int spotLightStatus(boolean status);
+    public static native int changeTextureNum(int texNum);
 
     public static void processEvents() {
         float speed = btnRunPressed ? 2.0f : 1.0f;
