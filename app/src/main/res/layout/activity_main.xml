@@ -9,9 +9,7 @@
     <moe.starrys.game_engine.GLES3JNIView
         android:id="@+id/GLES3JNIView2"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="-149dp"
-        tools:layout_editor_absoluteY="-16dp" />
+        android:layout_height="match_parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_move_up"
@@ -30,7 +28,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
         app:maxImageSize="48dp"
-        app:srcCompat="@drawable/ic_baseline_arrow_drop_up_24" />
+        app:srcCompat="@drawable/ic_baseline_arrow_drop_up_24"
+        android:focusable="true"
+        android:contentDescription="@string/btn_move_up_desc" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_move_down"
@@ -47,7 +47,9 @@
         app:layout_constraintTop_toBottomOf="@+id/btn_move_center"
         app:layout_constraintVertical_bias="0.0"
         app:maxImageSize="48dp"
-        app:srcCompat="@drawable/ic_baseline_arrow_drop_down_24" />
+        app:srcCompat="@drawable/ic_baseline_arrow_drop_down_24"
+        android:focusable="true"
+        android:contentDescription="@string/btn_move_down_desc" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_move_left"
@@ -66,7 +68,9 @@
         app:layout_constraintVertical_bias="0.769"
         app:maxImageSize="48dp"
         app:srcCompat="@drawable/ic_baseline_arrow_left_24"
-        app:useCompatPadding="false" />
+        app:useCompatPadding="false"
+        android:focusable="true"
+        android:contentDescription="@string/btn_move_left_desc" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_move_right"
@@ -83,7 +87,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.769"
         app:maxImageSize="48dp"
-        app:srcCompat="@drawable/ic_baseline_arrow_right_24" />
+        app:srcCompat="@drawable/ic_baseline_arrow_right_24"
+        android:focusable="true"
+        android:contentDescription="@string/btn_move_right_desc" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_move_center"
@@ -103,7 +109,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.769"
         app:maxImageSize="40dp"
-        app:srcCompat="@drawable/ic_launcher_foreground" />
+        app:srcCompat="@drawable/ic_launcher_foreground"
+        android:focusable="true"
+        android:contentDescription="@string/btn_move_center_desc" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_move_jump"
@@ -124,7 +132,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.939"
         app:maxImageSize="40dp"
-        app:srcCompat="@drawable/ic_stat_name" />
+        app:srcCompat="@drawable/ic_stat_name"
+        android:focusable="true"
+        android:contentDescription="@string/btn_move_jump_desc" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btm_move_run"
@@ -139,7 +149,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.948"
-        app:srcCompat="@drawable/ic_baseline_directions_run_24" />
+        app:srcCompat="@drawable/ic_baseline_directions_run_24"
+        android:focusable="true"
+        android:contentDescription="@string/btm_move_run" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_light"
@@ -154,7 +166,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.045"
-        app:srcCompat="@drawable/ic_baseline_wb_sunny_24" />
+        app:srcCompat="@drawable/ic_baseline_wb_sunny_24"
+        android:focusable="true"
+        android:contentDescription="@string/btn_light_desc" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">GameEngine</string>
+    <string name="app_name">Aperture - Demo</string>
+    <string name="btn_move_up_desc">Button for moving forward.</string>
+    <string name="btn_move_down_desc">Button used for moving backward.</string>
+    <string name="btn_move_left_desc">Button used for moving left.</string>
+    <string name="btn_move_right_desc">Button used for moving right.</string>
+    <string name="btn_move_center_desc">The central button in control panel.</string>
+    <string name="btn_move_jump_desc">Button used for jump.</string>
+    <string name="btm_move_run">Button used for running.</string>
+    <string name="btn_light_desc">Button used for control spot light.</string>
 </resources>
