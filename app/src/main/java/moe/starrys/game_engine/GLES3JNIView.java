@@ -18,7 +18,11 @@ package moe.starrys.game_engine;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -29,11 +33,16 @@ public class GLES3JNIView extends GLSurfaceView {
     private static boolean firstTouch = true;
     private static float lastX = 0.0f;
     private static float lastY = 0.0f;
+    private static boolean up_pressed;
+    private static boolean down_pressed;
+    private static boolean left_pressed;
+    private static boolean right_pressed;
+    private static boolean jump_pressed;
 
     private static Renderer renderer = null;
 
-    public GLES3JNIView(Context context) {
-        super(context);
+    public GLES3JNIView(Context context, AttributeSet attrs) {
+        super(context, attrs);
         // Pick an EGLConfig with RGB8 color, 16-bit depth, no stencil,
         // supporting OpenGL ES 2.0 or later backwards-compatible versions.
         setEGLConfigChooser(8, 8, 8, 8, 24, 8);
@@ -77,6 +86,7 @@ public class GLES3JNIView extends GLSurfaceView {
 
         @Override
         public void onDrawFrame(GL10 gl) {
+            GLES3JNILib.processEvents();
             GLES3JNILib.step();
         }
 
