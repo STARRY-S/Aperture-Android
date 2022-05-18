@@ -9,8 +9,8 @@ android {
         applicationId "moe.starrys.game_engine"
         minSdk 21
         targetSdk 31
-        versionCode 7
-        versionName "1.2.0"
+        versionCode 9
+        versionName "1.2.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
