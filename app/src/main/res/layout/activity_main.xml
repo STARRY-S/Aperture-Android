@@ -159,6 +159,8 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#EB838E8E"
         android:clickable="true"
+        android:contentDescription="@string/btn_light_desc"
+        android:focusable="true"
         app:borderWidth="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -166,9 +168,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.045"
-        app:srcCompat="@drawable/ic_baseline_wb_sunny_24"
-        android:focusable="true"
-        android:contentDescription="@string/btn_light_desc" />
+        app:srcCompat="@drawable/ic_baseline_highlight_24" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_texture_change"
